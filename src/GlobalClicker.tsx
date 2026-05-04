@@ -3,8 +3,8 @@ import { motion, AnimatePresence } from "framer-motion";
 import { createClient, RealtimeChannel } from "@supabase/supabase-js";
 
 // ── CONFIG ──────────────────────────────────────────────────
-const SUPABASE_URL      = "https://VOTRE_URL_SUPABASE";
-const SUPABASE_ANON_KEY = "VOTRE_CLE_ANON";
+const SUPABASE_URL      = "https://qzgbpeyyeqfjppxbinho.supabase.co";
+const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF6Z2JwZXl5ZXFmanBweGJpbmhvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc5MDA2NzEsImV4cCI6MjA5MzQ3NjY3MX0.MJu9-k-6ihCbsrzT7LKOKW9iouxPzeKmvAzTdywo-4s";
 const supabase  = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 const IS_MOCK   = SUPABASE_URL.includes("VOTRE_URL");
 
@@ -371,9 +371,9 @@ function UpCard({
               style={{fontSize:"0.72rem",color:"rgba(60,130,220,0.9)",fontWeight:900,flexShrink:0}}>▲</motion.span>
         }
       </div>
-      <div style={{fontSize:"0.62rem",fontWeight:600,color:sub,lineHeight:1.4}}>{desc}</div>
+      <div style={{fontSize:"0.62rem",fontWeight:dk?700:600,color:sub,lineHeight:1.4}}>{desc}</div>
       <div style={{
-        fontSize:"0.55rem", fontWeight:600, color:"rgba(40,80,180,0.52)",
+        fontSize:"0.55rem", fontWeight:dk?700:600, color:dk?"rgba(120,160,255,0.75)":"rgba(40,80,180,0.52)",
         lineHeight:1.4, fontStyle:"italic",
         borderLeft:`2px solid ${dk?"rgba(100,150,255,0.30)":"rgba(40,100,220,0.20)"}`,
         paddingLeft:6, marginTop:-2,
@@ -383,11 +383,11 @@ function UpCard({
           <div style={{display:"flex",alignItems:"center",gap:4}}>
             <span style={{fontSize:"0.82rem",fontWeight:900,letterSpacing:"-0.02em",
               color:canBuy?(dk?"rgba(120,170,255,0.95)":"rgba(25,95,215,0.95)"):faint}}>{fmtNum(cost)}</span>
-            <span style={{fontSize:"0.52rem",fontWeight:700,color:faint,letterSpacing:"0.1em",textTransform:"uppercase"}}>cachets</span>
+            <span style={{fontSize:"0.52rem",fontWeight:dk?800:700,color:faint,letterSpacing:"0.1em",textTransform:"uppercase"}}>cachets</span>
           </div>
           <label style={{display:"flex",alignItems:"center",gap:5,cursor:"pointer",userSelect:"none"}}
             onClick={e=>{e.stopPropagation();onToggleAuto();}}>
-            <span style={{fontSize:"0.52rem",fontWeight:700,color:sub,letterSpacing:"0.1em",textTransform:"uppercase"}}>auto</span>
+            <span style={{fontSize:"0.52rem",fontWeight:dk?800:700,color:sub,letterSpacing:"0.1em",textTransform:"uppercase"}}>auto</span>
             <div style={{position:"relative",width:30,height:16,borderRadius:8,
               background:autoEnabled?"rgba(60,130,220,0.88)":swBg,transition:"background 0.2s",flexShrink:0}}>
               <motion.div animate={{x:autoEnabled?15:2}} transition={{type:"spring",stiffness:500,damping:28}}
@@ -959,7 +959,7 @@ export default function GlobalClicker() {
               background:C.bgPanel,backdropFilter:"blur(16px)",WebkitBackdropFilter:"blur(16px)",
               border:`1.5px solid ${C.border}`,boxShadow:"0 2px 20px rgba(0,0,0,0.08),inset 0 1px 0 rgba(255,255,255,0.05)"}}>
             <div>
-              <div style={{fontSize:"0.62rem",fontWeight:800,letterSpacing:"0.35em",color:C.textSub,textTransform:"uppercase",marginBottom:"0.5rem"}}>
+              <div style={{fontSize:"0.62rem",fontWeight:darkMode?900:800,letterSpacing:"0.35em",color:C.textSub,textTransform:"uppercase",marginBottom:"0.5rem"}}>
                 cachets dissous · monde
               </div>
               <motion.div key={Math.floor(globalScore/50)}
@@ -1019,7 +1019,7 @@ export default function GlobalClicker() {
               border:"2px solid rgba(40,100,220,0.22)",
               padding:"10px 14px",flexShrink:0,
             }}>
-              <div style={{fontSize:"0.52rem",fontWeight:800,letterSpacing:"0.30em",color:"rgba(40,80,180,0.55)",textTransform:"uppercase",marginBottom:3}}>
+              <div style={{fontSize:"0.52rem",fontWeight:darkMode?900:800,letterSpacing:"0.30em",color:darkMode?"rgba(120,160,255,0.80)":"rgba(40,80,180,0.55)",textTransform:"uppercase",marginBottom:3}}>
                 total possédés
               </div>
               <motion.div
