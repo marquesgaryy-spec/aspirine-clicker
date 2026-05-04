@@ -363,17 +363,17 @@ function UpCard({
       <div style={{display:"flex",alignItems:"flex-start",justifyContent:"space-between",gap:6}}>
         <div style={{display:"flex",alignItems:"center",gap:7}}>
           <span style={{fontSize:"1rem"}}>{icon}</span>
-          <span style={{fontSize:"0.78rem",fontWeight:900,color:tx,lineHeight:1.2}}>{label}</span>
+          <span style={{fontSize:"0.84rem",fontWeight:900,color:tx,lineHeight:1.2}}>{label}</span>
         </div>
         {maxed
-          ? <span style={{fontSize:"0.52rem",fontWeight:800,color:"rgba(60,130,220,0.55)",letterSpacing:"0.2em",textTransform:"uppercase",marginTop:2}}>MAX</span>
+          ? <span style={{fontSize:"0.60rem",fontWeight:900,color:dk?"rgba(120,170,255,0.80)":"rgba(60,130,220,0.65)",letterSpacing:"0.2em",textTransform:"uppercase",marginTop:2}}>MAX</span>
           : lit && <motion.span animate={{opacity:[0.4,1,0.4]}} transition={{duration:1.2,repeat:Infinity}}
               style={{fontSize:"0.72rem",color:"rgba(60,130,220,0.9)",fontWeight:900,flexShrink:0}}>▲</motion.span>
         }
       </div>
-      <div style={{fontSize:"0.62rem",fontWeight:dk?700:600,color:sub,lineHeight:1.4}}>{desc}</div>
+      <div style={{fontSize:"0.70rem",fontWeight:700,color:dk?"rgba(200,220,255,0.85)":"rgba(0,0,0,0.62)",lineHeight:1.4}}>{desc}</div>
       <div style={{
-        fontSize:"0.55rem", fontWeight:dk?700:600, color:dk?"rgba(120,160,255,0.75)":"rgba(40,80,180,0.52)",
+        fontSize:"0.62rem", fontWeight:700, color:dk?"rgba(140,180,255,0.90)":"rgba(40,80,180,0.68)",
         lineHeight:1.4, fontStyle:"italic",
         borderLeft:`2px solid ${dk?"rgba(100,150,255,0.30)":"rgba(40,100,220,0.20)"}`,
         paddingLeft:6, marginTop:-2,
@@ -381,13 +381,13 @@ function UpCard({
       {!maxed && (
         <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginTop:2}}>
           <div style={{display:"flex",alignItems:"center",gap:4}}>
-            <span style={{fontSize:"0.82rem",fontWeight:900,letterSpacing:"-0.02em",
-              color:canBuy?(dk?"rgba(120,170,255,0.95)":"rgba(25,95,215,0.95)"):faint}}>{fmtNum(cost)}</span>
-            <span style={{fontSize:"0.52rem",fontWeight:dk?800:700,color:faint,letterSpacing:"0.1em",textTransform:"uppercase"}}>cachets</span>
+            <span style={{fontSize:"0.88rem",fontWeight:900,letterSpacing:"-0.02em",
+              color:canBuy?(dk?"rgba(140,185,255,0.95)":"rgba(25,95,215,0.95)"):(dk?"rgba(180,200,255,0.40)":"rgba(0,0,0,0.32)")}}>{fmtNum(cost)}</span>
+            <span style={{fontSize:"0.58rem",fontWeight:800,color:dk?"rgba(160,185,255,0.65)":"rgba(0,0,0,0.40)",letterSpacing:"0.1em",textTransform:"uppercase"}}>cachets</span>
           </div>
           <label style={{display:"flex",alignItems:"center",gap:5,cursor:"pointer",userSelect:"none"}}
             onClick={e=>{e.stopPropagation();onToggleAuto();}}>
-            <span style={{fontSize:"0.52rem",fontWeight:dk?800:700,color:sub,letterSpacing:"0.1em",textTransform:"uppercase"}}>auto</span>
+            <span style={{fontSize:"0.58rem",fontWeight:800,color:dk?"rgba(180,205,255,0.75)":"rgba(0,0,0,0.50)",letterSpacing:"0.1em",textTransform:"uppercase"}}>auto</span>
             <div style={{position:"relative",width:30,height:16,borderRadius:8,
               background:autoEnabled?"rgba(60,130,220,0.88)":swBg,transition:"background 0.2s",flexShrink:0}}>
               <motion.div animate={{x:autoEnabled?15:2}} transition={{type:"spring",stiffness:500,damping:28}}
@@ -403,7 +403,7 @@ function UpCard({
           style={{width:"100%",padding:"6px 0",borderRadius:8,border:"none",
             background:lit?"rgba(55,125,215,0.88)":btnBg,
             color:lit?"white":btnTx,
-            fontSize:"0.60rem",fontWeight:800,letterSpacing:"0.18em",textTransform:"uppercase",
+            fontSize:"0.65rem",fontWeight:800,letterSpacing:"0.15em",textTransform:"uppercase",
             cursor:lit?"pointer":"default",transition:"all 0.15s"}}>
           {lit?"acheter":"insuffisant"}
         </motion.button>
