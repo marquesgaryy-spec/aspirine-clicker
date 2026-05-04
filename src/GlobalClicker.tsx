@@ -3,8 +3,8 @@ import { motion, AnimatePresence } from "framer-motion";
 import { createClient, RealtimeChannel } from "@supabase/supabase-js";
 
 // ── CONFIG ──────────────────────────────────────────────────
-const SUPABASE_URL      = "https://VOTRE_URL_SUPABASE";
-const SUPABASE_ANON_KEY = "VOTRE_CLE_ANON";
+const SUPABASE_URL      = "https://qzgbpeyyeqfjppxbinho.supabase.co";
+const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF6Z2JwZXl5ZXFmanBweGJpbmhvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc5MDA2NzEsImV4cCI6MjA5MzQ3NjY3MX0.MJu9-k-6ihCbsrzT7LKOKW9iouxPzeKmvAzTdywo-4s";
 const supabase  = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 const IS_MOCK   = SUPABASE_URL.includes("VOTRE_URL");
 
