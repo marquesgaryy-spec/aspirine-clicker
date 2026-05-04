@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { createClient, RealtimeChannel } from "@supabase/supabase-js";
 
 // ── CONFIG ──────────────────────────────────────────────────
+const SUPABASE_URL      = "https://VOTRE_URL_SUPABASE";
 const SUPABASE_URL      = "https://qzgbpeyyeqfjppxbinho.supabase.co";
 const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF6Z2JwZXl5ZXFmanBweGJpbmhvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc5MDA2NzEsImV4cCI6MjA5MzQ3NjY3MX0.MJu9-k-6ihCbsrzT7LKOKW9iouxPzeKmvAzTdywo-4s";
 const supabase  = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
@@ -1035,7 +1036,7 @@ export default function GlobalClicker() {
             <div style={{display:"flex",alignItems:"flex-end",gap:0,flex:1,minHeight:0}}>
               {/* Disponible */}
               <div style={{flex:1}}>
-                <div style={{fontSize:"0.50rem",fontWeight:800,letterSpacing:"0.25em",color:"rgba(8,18,52,0.38)",textTransform:"uppercase",marginBottom:2}}>
+                <div style={{fontSize:"0.50rem",fontWeight:800,letterSpacing:"0.25em",color:darkMode?"rgba(150,180,255,0.85)":"rgba(8,18,52,0.38)",textTransform:"uppercase",marginBottom:2}}>
                   disponible
                 </div>
                 <motion.div key={Math.floor(available/3)}
@@ -1049,7 +1050,7 @@ export default function GlobalClicker() {
 
               {/* Dissolutions */}
               <div style={{flex:1}}>
-                <div style={{fontSize:"0.50rem",fontWeight:800,letterSpacing:"0.22em",color:"rgba(8,18,52,0.38)",textTransform:"uppercase",marginBottom:2}}>
+                <div style={{fontSize:"0.50rem",fontWeight:800,letterSpacing:"0.22em",color:darkMode?"rgba(150,180,255,0.85)":"rgba(8,18,52,0.38)",textTransform:"uppercase",marginBottom:2}}>
                   dissolutions
                 </div>
                 <motion.div key={combos}
@@ -1064,7 +1065,7 @@ export default function GlobalClicker() {
 
               {/* Cachets/s */}
               <div style={{flex:1}}>
-                <div style={{fontSize:"0.50rem",fontWeight:800,letterSpacing:"0.22em",color:"rgba(8,18,52,0.38)",textTransform:"uppercase",marginBottom:2}}>
+                <div style={{fontSize:"0.50rem",fontWeight:800,letterSpacing:"0.22em",color:darkMode?"rgba(150,180,255,0.85)":"rgba(8,18,52,0.38)",textTransform:"uppercase",marginBottom:2}}>
                   cachets/s
                 </div>
                 <motion.div key={cps}
@@ -1195,7 +1196,7 @@ export default function GlobalClicker() {
                     </span>
                     <span style={{
                       flex:1,fontWeight:isMe?900:700,fontSize:"0.74rem",
-                      color:isMe?"rgba(100,150,255,0.95)":C.text,
+                      color:isMe?"rgba(120,170,255,1.0)":(darkMode?"rgba(210,225,255,0.90)":"rgba(8,18,52,0.72)"),
                       overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap",
                     }}>
                       {e.pseudo}{isMe&&" ←"}
@@ -1203,8 +1204,9 @@ export default function GlobalClicker() {
                     <motion.span key={e.clicks} initial={{scale:1.15}} animate={{scale:1}}
                       style={{
                         fontWeight:900,fontSize:"0.74rem",flexShrink:0,
-                        color:isMe?"rgba(100,150,255,0.90)":C.textSub,
+                        color:isMe?"rgba(120,170,255,1.0)":(darkMode?"rgba(200,215,255,0.85)":"rgba(8,18,52,0.58)"),
                         fontVariantNumeric:"tabular-nums",
+                      whiteSpace:"nowrap",
                       }}>
                       {fmtFull(e.clicks)}
                     </motion.span>
