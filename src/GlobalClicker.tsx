@@ -855,8 +855,8 @@ export default function GlobalClicker() {
   );
 
   return (
-    <div className="fixed inset-0 overflow-hidden"
-      className={darkMode?"dark-mode":""} style={{fontFamily:"'Helvetica Neue',Helvetica,Arial,sans-serif",background:C.bg,transition:"background 0.3s"}}>
+    <div className={`fixed inset-0${darkMode?" dark-mode":""}`}
+      style={{fontFamily:"'Helvetica Neue',Helvetica,Arial,sans-serif",background:C.bg,transition:"background 0.3s",overflowY:"auto",overflowX:"hidden"}}>
 
       <div className="fixed inset-0 pointer-events-none opacity-[0.022]"
         style={{backgroundImage:`url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")`,backgroundSize:"200px"}}/>
@@ -895,7 +895,7 @@ export default function GlobalClicker() {
         ))}
       </AnimatePresence>
 
-      <div className="fixed inset-0 p-3 md:p-4 flex flex-col gap-3">
+      <div className="relative p-3 md:p-4 flex flex-col gap-3" style={{minHeight:"100vh"}}>
 
         {/* TOP BAR */}
         <div className="flex-shrink-0 flex items-center justify-between px-1 topbar">
@@ -950,8 +950,8 @@ export default function GlobalClicker() {
         </div>
 
         {/* BENTO GRID */}
-        <div className="flex-1 min-h-0 grid gap-3 bento-grid"
-          style={{gridTemplateColumns:"repeat(12,1fr)",gridTemplateRows:"repeat(10,1fr)"}}>
+        <div className="grid gap-3 bento-grid"
+          style={{gridTemplateColumns:"repeat(12,1fr)",gridTemplateRows:"repeat(10,1fr)",minHeight:"60vh"}}>
 
           {/* ── A : Score mondial ── */}
           <div className="rounded-2xl p-5 flex flex-col justify-between overflow-hidden score-mondial"
