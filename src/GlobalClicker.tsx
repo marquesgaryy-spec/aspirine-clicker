@@ -3,8 +3,8 @@ import { motion, AnimatePresence } from "framer-motion";
 import { createClient, RealtimeChannel } from "@supabase/supabase-js";
 
 // ── CONFIG ──────────────────────────────────────────────────
-const SUPABASE_URL      = "https://qzgbpeyyeqfjppxbinho.supabase.co";
-const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF6Z2JwZXl5ZXFmanBweGJpbmhvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc5MDA2NzEsImV4cCI6MjA5MzQ3NjY3MX0.MJu9-k-6ihCbsrzT7LKOKW9iouxPzeKmvAzTdywo-4s";
+const SUPABASE_URL      = "https://VOTRE_URL_SUPABASE";
+const SUPABASE_ANON_KEY = "VOTRE_CLE_ANON";
 const supabase  = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 const IS_MOCK   = SUPABASE_URL.includes("VOTRE_URL");
 
@@ -421,6 +421,7 @@ export default function GlobalClicker() {
   // ── Vérification token au démarrage ────────────────────────
   // On utilise un state pour savoir si l'init est terminée
   const [authReady, setAuthReady]         = useState(false);
+  const [darkMode,  setDarkMode]          = useState(()=>localStorage.getItem("gc_dark")==="1");
 
   const [globalScore, setGlobalScore]   = useState(0);
   const [leaderboard, setLeaderboard]   = useState<LBEntry[]>([]);
@@ -472,6 +473,10 @@ export default function GlobalClicker() {
   // editInputRef supprimé — plus d'édition pseudo inline
 
   useEffect(()=>{ pseudoRef.current=pseudo; },[pseudo]);
+  useEffect(()=>{
+    document.documentElement.setAttribute("data-theme", darkMode ? "dark" : "light");
+    localStorage.setItem("gc_dark", darkMode ? "1" : "0");
+  },[darkMode]);
 
   // ── Init : restaurer session depuis localStorage ──────────
   useEffect(()=>{
@@ -516,8 +521,8 @@ export default function GlobalClicker() {
     setDisplayTotal(game.current.total);
     setGlobalScore(s=>s+actual);
     pending.current += actual;
-    flushFn.current?.(pending.current, pseudoRef.current, game.current.total);
-    // pending = delta depuis lastFlushed (remis à 0 après chaque flush réussi)
+    // Ne flusher que si un pseudo est défini (évite d'envoyer pendant le chargement)
+    if(pseudoRef.current) flushFn.current?.(pending.current, pseudoRef.current, game.current.total);
   },[]);
 
   const spendCachets = useCallback((cost:number, fn:()=>void):boolean=>{
@@ -668,7 +673,7 @@ export default function GlobalClicker() {
     if(ca > 0) { setCatalyseur(ca); setPhase(prev=>Math.max(prev,3)); }
     if(co > 0) { setCombos(co); combosRef.current=co; }
   },[]);
-  useEffect(()=>{ if(pseudo) loadScore(pseudo); },[pseudo,loadScore]);
+  // loadScore appelé uniquement à l'init token et à handleAuthLogin — pas ici (évite les doubles flush)
 
   useEffect(()=>{
     if(IS_MOCK) return;
@@ -826,9 +831,13 @@ export default function GlobalClicker() {
     setAuthStep("pseudo");
   };
 
+  // ── toggle dark + palette ────────────────────────────
+  const toggleDark=()=>setDarkMode(d=>{const n=!d;localStorage.setItem('gc_dark',n?'1':'0');return n;});
+  const C=darkMode?{bg:'#0F1117',bgPanel:'rgba(255,255,255,0.07)',bgPanelHi:'rgba(255,255,255,0.10)',border:'rgba(255,255,255,0.11)',text:'rgba(230,238,255,0.88)',textSub:'rgba(230,238,255,0.42)',textFaint:'rgba(230,238,255,0.28)',score:'#E8EEFF',blur:'rgba(15,17,23,0.97)',sep:'rgba(255,255,255,0.09)'}:{bg:'#EEEAE2',bgPanel:'rgba(255,255,255,0.55)',bgPanelHi:'rgba(255,255,255,0.60)',border:'rgba(255,255,255,0.88)',text:'rgba(8,18,52,0.82)',textSub:'rgba(8,18,52,0.42)',textFaint:'rgba(8,18,52,0.28)',score:'#080e1e',blur:'rgba(238,234,226,0.97)',sep:'rgba(8,18,52,0.07)'};
+
   // Attendre que l'init soit terminée (évite le flash)
   if(!authReady) return (
-    <div className="fixed inset-0" style={{background:"#EEEAE2",display:"flex",alignItems:"center",justifyContent:"center"}}>
+    <div className="fixed inset-0" style={{background:C.bg,display:"flex",alignItems:"center",justifyContent:"center"}}>
       <motion.div animate={{opacity:[0.3,1,0.3]}} transition={{duration:1.4,repeat:Infinity}}
         style={{width:48,height:48}}>
         <AspirinPill dissolve={0} recharging={false}/>
@@ -838,13 +847,13 @@ export default function GlobalClicker() {
 
   return (
     <div className="fixed inset-0 overflow-hidden"
-      style={{fontFamily:"'Helvetica Neue',Helvetica,Arial,sans-serif",background:"#EEEAE2"}}>
+      style={{fontFamily:"'Helvetica Neue',Helvetica,Arial,sans-serif",background:C.bg,transition:"background 0.3s"}}>
 
       <div className="fixed inset-0 pointer-events-none opacity-[0.022]"
         style={{backgroundImage:`url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")`,backgroundSize:"200px"}}/>
       <div className="fixed inset-0 pointer-events-none overflow-hidden">
-        <div className="absolute rounded-full blur-3xl opacity-55" style={{width:"55vw",height:"55vw",top:"-15%",right:"-8%",background:"radial-gradient(circle,#dde8f5,transparent)"}}/>
-        <div className="absolute rounded-full blur-3xl opacity-40" style={{width:"40vw",height:"40vw",bottom:"-12%",left:"-5%",background:"radial-gradient(circle,#d0dff0,transparent)"}}/>
+        <div className="absolute rounded-full blur-3xl opacity-55 blob1" style={{width:"55vw",height:"55vw",top:"-15%",right:"-8%",background:"radial-gradient(circle,#dde8f5,transparent)"}}/>
+        <div className="absolute rounded-full blur-3xl opacity-40 blob2" style={{width:"40vw",height:"40vw",bottom:"-12%",left:"-5%",background:"radial-gradient(circle,#d0dff0,transparent)"}}/>
       </div>
 
       <AnimatePresence>
@@ -881,7 +890,7 @@ export default function GlobalClicker() {
 
         {/* TOP BAR */}
         <div className="flex-shrink-0 flex items-center justify-between px-1 topbar">
-          <div className="font-black leading-none" style={{fontSize:"clamp(0.88rem,2.2vw,1.3rem)",letterSpacing:"-0.03em",color:"rgba(8,18,52,0.78)"}}>
+          <div className="font-black leading-none" style={{fontSize:"clamp(0.88rem,2.2vw,1.3rem)",letterSpacing:"-0.03em",color:C.text}}>
             {words.filter(w=>w!=="|").map((w,i)=>(
               <AnimatePresence key={i}>
                 {introIdx>i&&(
@@ -897,14 +906,21 @@ export default function GlobalClicker() {
               style={{fontSize:"0.56rem",fontWeight:800,letterSpacing:"0.32em",color:"rgba(40,80,180,0.48)",textTransform:"uppercase"}}>
               {PHASES[phase].label}
             </motion.span>
-            {/* Pseudo en lecture seule + bouton déconnexion */}
+            {/* Dark mode + Pseudo + Déconnexion */}
+            <div className="flex items-center gap-3">
+              <button onClick={toggleDark} title={darkMode?"Mode clair":"Mode sombre"}
+                style={{width:26,height:26,borderRadius:7,border:`1px solid ${C.border}`,
+                  background:C.bgPanel,cursor:"pointer",display:"flex",alignItems:"center",
+                  justifyContent:"center",transition:"all 0.2s",flexShrink:0}}>
+                <span style={{fontSize:"0.78rem",lineHeight:1}}>{darkMode?"☀️":"🌙"}</span>
+              </button>
             <div className="flex items-center gap-2">
               <motion.div className="w-2 h-2 rounded-full flex-shrink-0"
                 style={{background:pseudo?"rgba(40,80,200,0.72)":"rgba(10,20,60,0.22)"}}
                 animate={{opacity:pseudo?[1,0.3,1]:1}} transition={{duration:2,repeat:Infinity}}/>
               {/* Pseudo affiché en readonly — non cliquable pour éviter l'usurpation */}
               <span style={{fontSize:"0.92rem",fontWeight:800,letterSpacing:"0.04em",
-                color:pseudo?"rgba(8,18,52,0.82)":"rgba(8,18,52,0.35)"}}>
+                color:pseudo?C.text:C.textFaint}}>
                 {pseudo||"…"}
               </span>
               {/* Bouton déconnexion — uniquement si connecté */}
@@ -918,6 +934,16 @@ export default function GlobalClicker() {
                   quitter
                 </button>
               )}
+              {/* Bouton dark mode */}
+              <button onClick={()=>setDarkMode(d=>!d)}
+                title={darkMode?"Mode clair":"Mode sombre"}
+                style={{width:22,height:22,borderRadius:6,border:"1px solid rgba(8,18,52,0.15)",
+                  background:darkMode?"rgba(255,255,255,0.12)":"rgba(8,18,52,0.06)",
+                  cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",
+                  fontSize:"0.75rem",transition:"all 0.2s",flexShrink:0}}>
+                {darkMode ? "☀️" : "🌙"}
+              </button>
+            </div>
             </div>
           </div>
         </div>
@@ -929,15 +955,15 @@ export default function GlobalClicker() {
           {/* ── A : Score mondial ── */}
           <div className="rounded-2xl p-5 flex flex-col justify-between overflow-hidden score-mondial"
             style={{gridColumn:"1/8",gridRow:"1/4",
-              background:"rgba(255,255,255,0.55)",backdropFilter:"blur(16px)",WebkitBackdropFilter:"blur(16px)",
-              border:"1.5px solid rgba(255,255,255,0.88)",boxShadow:"0 2px 20px rgba(0,0,0,0.05),inset 0 1px 0 rgba(255,255,255,0.95)"}}>
+              background:C.bgPanel,backdropFilter:"blur(16px)",WebkitBackdropFilter:"blur(16px)",
+              border:`1.5px solid ${C.border}`,boxShadow:"0 2px 20px rgba(0,0,0,0.08),inset 0 1px 0 rgba(255,255,255,0.05)"}}>
             <div>
-              <div style={{fontSize:"0.62rem",fontWeight:800,letterSpacing:"0.35em",color:"rgba(8,18,52,0.42)",textTransform:"uppercase",marginBottom:"0.5rem"}}>
+              <div style={{fontSize:"0.62rem",fontWeight:800,letterSpacing:"0.35em",color:C.textSub,textTransform:"uppercase",marginBottom:"0.5rem"}}>
                 cachets dissous · monde
               </div>
               <motion.div key={Math.floor(globalScore/50)}
                 initial={{scale:1.03}} animate={{scale:1}} transition={{duration:0.2}}
-                style={{fontSize:"clamp(2.5rem,7vw,6rem)",fontWeight:900,letterSpacing:"-0.05em",color:"#080e1e",lineHeight:1}}>
+                style={{fontSize:"clamp(2.5rem,7vw,6rem)",fontWeight:900,letterSpacing:"-0.05em",color:C.score,lineHeight:1}}>
                 {globalScore.toLocaleString("fr-FR")}
               </motion.div>
             </div>
@@ -970,13 +996,13 @@ export default function GlobalClicker() {
           */}
           <div className="rounded-2xl p-5 flex flex-col gap-3 overflow-hidden stats-panel"
             style={{gridColumn:"8/13",gridRow:"1/4",
-              background:"rgba(255,255,255,0.60)",backdropFilter:"blur(16px)",WebkitBackdropFilter:"blur(16px)",
-              border:"1.5px solid rgba(255,255,255,0.92)",
-              boxShadow:"0 4px 28px rgba(40,80,200,0.07),inset 0 1px 0 rgba(255,255,255,0.98)"}}>
+              background:C.bgPanelHi,backdropFilter:"blur(16px)",WebkitBackdropFilter:"blur(16px)",
+              border:`1.5px solid ${C.border}`,
+              boxShadow:"0 4px 28px rgba(40,80,200,0.07),inset 0 1px 0 rgba(255,255,255,0.05)"}}>
 
             {/* Pseudo + rang */}
             <div style={{display:"flex",alignItems:"baseline",justifyContent:"space-between",flexShrink:0}}>
-              <span style={{fontSize:"clamp(0.95rem,1.8vw,1.25rem)",fontWeight:900,letterSpacing:"-0.01em",color:"rgba(8,18,52,0.85)",lineHeight:1}}>
+              <span style={{fontSize:"clamp(0.95rem,1.8vw,1.25rem)",fontWeight:900,letterSpacing:"-0.01em",color:C.text,lineHeight:1}}>
                 {pseudo||"—"}
               </span>
               {myRank>=0&&(
@@ -1054,7 +1080,7 @@ export default function GlobalClicker() {
           <div className="aspirine-panel" style={{
             gridColumn:"1/8", gridRow:"4/11",
             position:"relative", overflow:"hidden", borderRadius:"1rem",
-            background:"rgba(215,232,250,0.38)",
+            background:darkMode?"rgba(30,50,80,0.40)":"rgba(215,232,250,0.38)",
             backdropFilter:"blur(16px)", WebkitBackdropFilter:"blur(16px)",
             border:"1.5px solid rgba(255,255,255,0.84)",
             boxShadow:"0 2px 22px rgba(40,100,220,0.07),inset 0 1px 0 rgba(255,255,255,0.88)",
@@ -1120,7 +1146,7 @@ export default function GlobalClicker() {
                 </div>
                 <div style={{
                   fontSize:"0.60rem", fontWeight:800, letterSpacing:"0.28em",
-                  color: recharging ? "rgba(20,70,200,0.62)" : "rgba(8,18,52,0.48)",
+                  color: recharging ? "rgba(80,140,255,0.80)" : C.textSub,
                   textTransform:"uppercase",
                 }}>
                   {isDissolving ? "libération !"
@@ -1129,7 +1155,7 @@ export default function GlobalClicker() {
                    : `${CLICKS_TO_DISSOLVE-dissolveClicks} clics`}
                 </div>
               </div>
-              <div style={{fontSize:"0.62rem",fontWeight:800,color:"rgba(8,18,52,0.30)",letterSpacing:"0.05em"}}>
+              <div style={{fontSize:"0.62rem",fontWeight:800,color:C.textFaint,letterSpacing:"0.05em"}}>
                 {combos} cachet{combos!==1?"s":""} dissous
               </div>
             </div>
@@ -1138,11 +1164,11 @@ export default function GlobalClicker() {
           {/* ── C : Leaderboard Top 15 — pleine hauteur, sans stats parasites ── */}
           <div className="rounded-2xl flex flex-col overflow-hidden leaderboard-panel"
             style={{gridColumn:"8/13",gridRow:"4/11",
-              background:"rgba(255,255,255,0.55)",backdropFilter:"blur(16px)",WebkitBackdropFilter:"blur(16px)",
-              border:"1.5px solid rgba(255,255,255,0.88)",boxShadow:"0 2px 20px rgba(0,0,0,0.05),inset 0 1px 0 rgba(255,255,255,0.95)"}}>
+              background:C.bgPanel,backdropFilter:"blur(16px)",WebkitBackdropFilter:"blur(16px)",
+              border:`1.5px solid ${C.border}`,boxShadow:"0 2px 20px rgba(0,0,0,0.08),inset 0 1px 0 rgba(255,255,255,0.05)"}}>
 
-            <div style={{padding:"14px 18px 10px",flexShrink:0,borderBottom:"1px solid rgba(8,18,52,0.07)"}}>
-              <span style={{fontSize:"0.62rem",fontWeight:800,letterSpacing:"0.32em",color:"rgba(8,18,52,0.42)",textTransform:"uppercase"}}>
+            <div style={{padding:"14px 18px 10px",flexShrink:0,borderBottom:`1px solid ${C.sep}`}}>
+              <span style={{fontSize:"0.62rem",fontWeight:800,letterSpacing:"0.32em",color:C.textSub,textTransform:"uppercase"}}>
                 classement · top 15
               </span>
             </div>
@@ -1196,13 +1222,13 @@ export default function GlobalClicker() {
         {/* ── AMÉLIORATIONS — section indépendante sous la grille ── */}
         <div className="flex-shrink-0 rounded-2xl px-5 py-4 upgrades-section safe-bottom"
           style={{
-            background:"rgba(255,255,255,0.52)",
+            background:C.bgPanel,
             backdropFilter:"blur(16px)",WebkitBackdropFilter:"blur(16px)",
-            border:"1.5px solid rgba(255,255,255,0.86)",
-            boxShadow:"0 2px 14px rgba(0,0,0,0.04),inset 0 1px 0 rgba(255,255,255,0.95)",
+            border:`1.5px solid ${C.border}`,
+            boxShadow:"0 2px 14px rgba(0,0,0,0.06),inset 0 1px 0 rgba(255,255,255,0.04)",
           }}>
           <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:12}}>
-            <span style={{fontSize:"0.68rem",fontWeight:800,letterSpacing:"0.32em",color:"rgba(8,18,52,0.45)",textTransform:"uppercase"}}>
+            <span style={{fontSize:"0.68rem",fontWeight:800,letterSpacing:"0.32em",color:C.textSub,textTransform:"uppercase"}}>
               améliorations
             </span>
             <div style={{display:"flex",alignItems:"center",gap:5}}>
@@ -1274,13 +1300,13 @@ export default function GlobalClicker() {
           <motion.div
             initial={{opacity:0}} animate={{opacity:1}} exit={{opacity:0}}
             className="fixed inset-0 z-50 flex items-center justify-center p-6"
-            style={{background:"rgba(238,234,226,0.96)",backdropFilter:"blur(24px)",WebkitBackdropFilter:"blur(24px)"}}>
+            style={{background:darkMode?"rgba(15,17,23,0.97)":"rgba(238,234,226,0.96)",backdropFilter:"blur(24px)",WebkitBackdropFilter:"blur(24px)"}}>
             <motion.div
               initial={{scale:0.94,opacity:0,y:20}} animate={{scale:1,opacity:1,y:0}}
               exit={{scale:0.97,opacity:0}} transition={{duration:0.24,ease:[0.16,1,0.3,1]}}
-              style={{background:"rgba(255,255,255,0.90)",backdropFilter:"blur(24px)",WebkitBackdropFilter:"blur(24px)",
-                border:"1.5px solid rgba(255,255,255,0.96)",
-                boxShadow:"0 12px 64px rgba(40,80,200,0.13),inset 0 1px 0 rgba(255,255,255,0.99)",
+              style={{background:darkMode?"rgba(25,28,38,0.97)":"rgba(255,255,255,0.90)",backdropFilter:"blur(24px)",WebkitBackdropFilter:"blur(24px)",
+                border:`1.5px solid ${C.border}`,
+                boxShadow:"0 12px 64px rgba(40,80,200,0.13),inset 0 1px 0 rgba(255,255,255,0.05)",
                 borderRadius:22,padding:"2.2rem",width:"100%",maxWidth:340}}>
 
               {/* Aspirine animée */}
