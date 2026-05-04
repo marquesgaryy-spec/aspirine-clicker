@@ -1224,18 +1224,18 @@ export default function GlobalClicker() {
         {/* ── AMÉLIORATIONS — section indépendante sous la grille ── */}
         <div className="flex-shrink-0 rounded-2xl px-5 py-4 upgrades-section safe-bottom"
           style={{
-            background:darkMode?"rgba(255,255,255,0.03)":C.bgPanel,
-            backdropFilter:"blur(16px)",WebkitBackdropFilter:"blur(16px)",
-            border:darkMode?"1.5px solid rgba(255,255,255,0.07)":`1.5px solid ${C.border}`,
-            boxShadow:"0 2px 14px rgba(0,0,0,0.06),inset 0 1px 0 rgba(255,255,255,0.02)",
+            background:darkMode?"transparent":C.bgPanel,
+            backdropFilter:darkMode?"none":"blur(16px)",WebkitBackdropFilter:darkMode?"none":"blur(16px)",
+            border:darkMode?"none":`1.5px solid ${C.border}`,
+            boxShadow:darkMode?"none":"0 2px 14px rgba(0,0,0,0.06),inset 0 1px 0 rgba(255,255,255,0.95)",
           }}>
           <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:12}}>
             <span style={{fontSize:"0.68rem",fontWeight:darkMode?900:800,letterSpacing:"0.32em",color:darkMode?"#A8C8FF":C.textSub,textTransform:"uppercase"}}>
               améliorations
             </span>
             <div style={{display:"flex",alignItems:"center",gap:5}}>
-              <span style={{fontSize:"0.92rem",fontWeight:900,color:"rgba(22,82,215,0.90)",letterSpacing:"-0.02em"}}>{fmtNum(available)}</span>
-              <span style={{fontSize:"0.55rem",fontWeight:700,color:"rgba(8,18,52,0.32)",letterSpacing:"0.12em",textTransform:"uppercase"}}>cachets dispo</span>
+              <span style={{fontSize:"0.92rem",fontWeight:900,color:darkMode?"rgba(120,170,255,0.95)":"rgba(22,82,215,0.90)",letterSpacing:"-0.02em"}}>{fmtNum(available)}</span>
+              <span style={{fontSize:"0.55rem",fontWeight:darkMode?800:700,color:darkMode?"#A8C8FF":"rgba(8,18,52,0.32)",letterSpacing:"0.12em",textTransform:"uppercase"}}>cachets dispo</span>
             </div>
           </div>
           <div className="upgrades-row" style={{display:"flex",gap:12}}>
