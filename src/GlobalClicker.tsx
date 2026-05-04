@@ -333,20 +333,29 @@ const WavePanel = React.memo(function WavePanel({ ratio, isDissolving, bubbles }
 
 // ── UPGRADE CARD ──────────────────────────────────────────────
 function UpCard({
-  label, icon, desc, hint, cost, canBuy, maxed, autoEnabled, onBuy, onToggleAuto,
+  label, icon, desc, hint, cost, canBuy, maxed, autoEnabled, onBuy, onToggleAuto, dark,
 }:{
   label:string; icon:string; desc:string; hint:string; cost:number; canBuy:boolean;
-  maxed?:boolean; autoEnabled:boolean; onBuy:()=>void; onToggleAuto:()=>void;
+  maxed?:boolean; autoEnabled:boolean; onBuy:()=>void; onToggleAuto:()=>void; dark?:boolean;
 }) {
+  const dk   = dark ?? false;
+  const tx   = dk ? "#E8EEFF"                   : "rgba(8,18,40,0.88)";
+  const sub  = dk ? "rgba(180,200,255,0.65)"    : "rgba(0,0,0,0.48)";
+  const faint= dk ? "rgba(180,200,255,0.40)"    : "rgba(0,0,0,0.30)";
+  const bgC  = dk ? "rgba(255,255,255,0.07)"    : "rgba(0,0,0,0.03)";
+  const bgL  = dk ? "rgba(60,130,220,0.20)"     : "rgba(60,130,220,0.09)";
+  const bgM  = dk ? "rgba(60,130,220,0.12)"     : "rgba(60,130,220,0.04)";
+  const brd  = dk ? "rgba(255,255,255,0.15)"    : "rgba(0,0,0,0.09)";
+  const swBg = dk ? "rgba(255,255,255,0.20)"    : "rgba(0,0,0,0.16)";
+  const btnBg= dk ? "rgba(255,255,255,0.10)"    : "rgba(0,0,0,0.06)";
+  const btnTx= dk ? "rgba(180,200,255,0.55)"    : "rgba(0,0,0,0.26)";
   const lit = !maxed && canBuy;
   return (
     <div style={{
       display:"flex", flexDirection:"column", gap:8,
       padding:"14px 16px", borderRadius:14,
-      background: lit   ? "rgba(60,130,220,0.09)"
-                : maxed ? "rgba(60,130,220,0.04)"
-                        : "rgba(0,0,0,0.03)",
-      border:`1.5px solid ${lit?"rgba(60,130,220,0.38)":maxed?"rgba(60,130,220,0.15)":"rgba(0,0,0,0.09)"}`,
+      background: lit ? bgL : maxed ? bgM : bgC,
+      border:`1.5px solid ${lit?"rgba(60,130,220,0.45)":maxed?"rgba(60,130,220,0.20)":brd}`,
       opacity:!canBuy&&!maxed?0.48:1,
       transition:"all 0.18s",
       flex:"1 1 0", minWidth:0,
@@ -354,7 +363,7 @@ function UpCard({
       <div style={{display:"flex",alignItems:"flex-start",justifyContent:"space-between",gap:6}}>
         <div style={{display:"flex",alignItems:"center",gap:7}}>
           <span style={{fontSize:"1rem"}}>{icon}</span>
-          <span style={{fontSize:"0.78rem",fontWeight:900,color:"rgba(8,18,40,0.88)",lineHeight:1.2}}>{label}</span>
+          <span style={{fontSize:"0.78rem",fontWeight:900,color:tx,lineHeight:1.2}}>{label}</span>
         </div>
         {maxed
           ? <span style={{fontSize:"0.52rem",fontWeight:800,color:"rgba(60,130,220,0.55)",letterSpacing:"0.2em",textTransform:"uppercase",marginTop:2}}>MAX</span>
@@ -362,25 +371,25 @@ function UpCard({
               style={{fontSize:"0.72rem",color:"rgba(60,130,220,0.9)",fontWeight:900,flexShrink:0}}>▲</motion.span>
         }
       </div>
-      <div style={{fontSize:"0.62rem",fontWeight:600,color:"rgba(0,0,0,0.48)",lineHeight:1.4}}>{desc}</div>
+      <div style={{fontSize:"0.62rem",fontWeight:600,color:sub,lineHeight:1.4}}>{desc}</div>
       <div style={{
         fontSize:"0.55rem", fontWeight:600, color:"rgba(40,80,180,0.52)",
         lineHeight:1.4, fontStyle:"italic",
-        borderLeft:"2px solid rgba(40,100,220,0.20)",
+        borderLeft:`2px solid ${dk?"rgba(100,150,255,0.30)":"rgba(40,100,220,0.20)"}`,
         paddingLeft:6, marginTop:-2,
       }}>{hint}</div>
       {!maxed && (
         <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginTop:2}}>
           <div style={{display:"flex",alignItems:"center",gap:4}}>
             <span style={{fontSize:"0.82rem",fontWeight:900,letterSpacing:"-0.02em",
-              color:canBuy?"rgba(25,95,215,0.95)":"rgba(0,0,0,0.32)"}}>{fmtNum(cost)}</span>
-            <span style={{fontSize:"0.52rem",fontWeight:700,color:"rgba(0,0,0,0.30)",letterSpacing:"0.1em",textTransform:"uppercase"}}>cachets</span>
+              color:canBuy?(dk?"rgba(120,170,255,0.95)":"rgba(25,95,215,0.95)"):faint}}>{fmtNum(cost)}</span>
+            <span style={{fontSize:"0.52rem",fontWeight:700,color:faint,letterSpacing:"0.1em",textTransform:"uppercase"}}>cachets</span>
           </div>
           <label style={{display:"flex",alignItems:"center",gap:5,cursor:"pointer",userSelect:"none"}}
             onClick={e=>{e.stopPropagation();onToggleAuto();}}>
-            <span style={{fontSize:"0.52rem",fontWeight:700,color:"rgba(0,0,0,0.38)",letterSpacing:"0.1em",textTransform:"uppercase"}}>auto</span>
+            <span style={{fontSize:"0.52rem",fontWeight:700,color:sub,letterSpacing:"0.1em",textTransform:"uppercase"}}>auto</span>
             <div style={{position:"relative",width:30,height:16,borderRadius:8,
-              background:autoEnabled?"rgba(60,130,220,0.88)":"rgba(0,0,0,0.16)",transition:"background 0.2s",flexShrink:0}}>
+              background:autoEnabled?"rgba(60,130,220,0.88)":swBg,transition:"background 0.2s",flexShrink:0}}>
               <motion.div animate={{x:autoEnabled?15:2}} transition={{type:"spring",stiffness:500,damping:28}}
                 style={{position:"absolute",top:2,width:12,height:12,borderRadius:"50%",
                   background:"white",boxShadow:"0 1px 3px rgba(0,0,0,0.25)"}}/>
@@ -392,8 +401,8 @@ function UpCard({
         <motion.button onClick={canBuy?onBuy:undefined}
           whileHover={lit?{scale:1.02}:{}} whileTap={lit?{scale:0.96}:{}}
           style={{width:"100%",padding:"6px 0",borderRadius:8,border:"none",
-            background:lit?"rgba(55,125,215,0.88)":"rgba(0,0,0,0.06)",
-            color:lit?"white":"rgba(0,0,0,0.26)",
+            background:lit?"rgba(55,125,215,0.88)":btnBg,
+            color:lit?"white":btnTx,
             fontSize:"0.60rem",fontWeight:800,letterSpacing:"0.18em",textTransform:"uppercase",
             cursor:lit?"pointer":"default",transition:"all 0.15s"}}>
           {lit?"acheter":"insuffisant"}
@@ -906,14 +915,7 @@ export default function GlobalClicker() {
               style={{fontSize:"0.56rem",fontWeight:800,letterSpacing:"0.32em",color:darkMode?"rgba(120,160,255,0.65)":"rgba(40,80,180,0.48)",textTransform:"uppercase"}}>
               {PHASES[phase].label}
             </motion.span>
-            {/* Dark mode + Pseudo + Déconnexion */}
-            <div className="flex items-center gap-3">
-              <button onClick={toggleDark} title={darkMode?"Mode clair":"Mode sombre"}
-                style={{width:26,height:26,borderRadius:7,border:`1px solid ${C.border}`,
-                  background:C.bgPanel,cursor:"pointer",display:"flex",alignItems:"center",
-                  justifyContent:"center",transition:"all 0.2s",flexShrink:0}}>
-                <span style={{fontSize:"0.78rem",lineHeight:1}}>{darkMode?"☀️":"🌙"}</span>
-              </button>
+            {/* Pseudo + Déconnexion + Dark mode */}
             <div className="flex items-center gap-2">
               <motion.div className="w-2 h-2 rounded-full flex-shrink-0"
                 style={{background:pseudo?"rgba(40,80,200,0.72)":"rgba(10,20,60,0.22)"}}
@@ -943,7 +945,6 @@ export default function GlobalClicker() {
                   fontSize:"0.75rem",transition:"all 0.2s",flexShrink:0}}>
                 {darkMode ? "☀️" : "🌙"}
               </button>
-            </div>
             </div>
           </div>
         </div>
@@ -1237,7 +1238,7 @@ export default function GlobalClicker() {
             </div>
           </div>
           <div className="upgrades-row" style={{display:"flex",gap:12}}>
-            <UpCard
+            <UpCard dark={darkMode}
               label="Eau chaude" icon="🌡"
               desc={UPGRADES[0].desc(chaleur)}
               hint="Réduit le temps de reformation du cachet. Plus chaud = plus vite."
@@ -1248,7 +1249,7 @@ export default function GlobalClicker() {
               onBuy={buyChaleur}
               onToggleAuto={()=>setAutoChAchat(v=>!v)}
             />
-            <UpCard
+            <UpCard dark={darkMode}
               label="Aide-soignant" icon="🩺"
               desc={aides>0?`×${aides} actif${aides>1?"s":""}·auto ${autoLabel||""} · niv ${aides}/25` : "clique à ta place · niv 0/25"}
               hint="Clique automatiquement. Chaque niveau = 1 cliqueur de plus. Le Catalyseur multiplie leurs cachets par clic."
@@ -1264,7 +1265,7 @@ export default function GlobalClicker() {
                 <motion.div initial={{opacity:0,x:14}} animate={{opacity:1,x:0}}
                   transition={{duration:0.32,ease:[0.16,1,0.3,1]}}
                   style={{display:"flex",gap:12,flex:"2 1 0"}}>
-                  <UpCard
+                  <UpCard dark={darkMode}
                     label="Labo R&D" icon="🔬"
                     desc={labo>0?`+${labo} cachet${labo>1?"s":""}/dissolution · niv ${labo}/10`:"+1 cachet/dissolution au niv 1 · niv 0/10"}
                     hint="Cadeau bonus à chaque dissolution : niv 1 = +1 cachet, niv 5 = +5, niv 10 = +10. Indépendant des clics."
@@ -1275,7 +1276,7 @@ export default function GlobalClicker() {
                     onBuy={buyLabo}
                     onToggleAuto={()=>setAutoLaboAchat(v=>!v)}
                   />
-                  <UpCard
+                  <UpCard dark={darkMode}
                     label="Catalyseur" icon="⚡"
                     desc={UPGRADES[3].desc(catalyseur)}
                     hint="Chaque clic automatique rapporte plus de cachets. Le clic manuel reste à 1. Toujours 20 clics pour dissoudre."
