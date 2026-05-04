@@ -1,0 +1,83 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ── Reset ─────────────────────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html, body, #root { width: 100%; height: 100%; overflow: hidden; }
+body { background: #EEEAE2; overscroll-behavior: none; touch-action: manipulation; }
+
+/* ── Scrollbars invisibles ─────────────────────────────────── */
+::-webkit-scrollbar { display: none; }
+* { scrollbar-width: none; -ms-overflow-style: none; }
+
+/* ── Mobile : layout empilé ────────────────────────────────── */
+@media (max-width: 768px) {
+
+  /* La grille bento passe en colonne unique */
+  .bento-grid {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 8px !important;
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
+    height: 100% !important;
+  }
+
+  /* Chaque cellule prend la largeur complète */
+  .bento-grid > div {
+    grid-column: unset !important;
+    grid-row: unset !important;
+    width: 100% !important;
+    min-height: 0 !important;
+    flex-shrink: 0 !important;
+  }
+
+  /* Score mondial : plus compact */
+  .score-mondial { min-height: 80px !important; }
+  .score-mondial .score-number { font-size: clamp(2rem, 10vw, 3.5rem) !important; }
+
+  /* Stats perso : hauteur fixe */
+  .stats-panel { min-height: 160px !important; }
+
+  /* Zone aspirine : hauteur fixe raisonnable */
+  .aspirine-panel { min-height: 260px !important; max-height: 340px !important; flex-shrink: 0 !important; }
+
+  /* Leaderboard : hauteur limitée sur mobile */
+  .leaderboard-panel { max-height: 280px !important; min-height: 200px !important; }
+
+  /* Section améliorations : flex-wrap */
+  .upgrades-section .upgrades-row {
+    flex-wrap: wrap !important;
+    gap: 8px !important;
+  }
+  .upgrades-section .upgrades-row > div {
+    flex: 1 1 calc(50% - 4px) !important;
+    min-width: 140px !important;
+  }
+
+  /* Typo adaptée mobile */
+  .stat-value { font-size: clamp(1rem, 4vw, 1.5rem) !important; }
+  .total-value { font-size: clamp(1.4rem, 6vw, 2.2rem) !important; }
+
+  /* Bouton aspirine : taille mobile */
+  .aspirine-btn { width: clamp(100px, 25vw, 140px) !important; height: clamp(100px, 25vw, 140px) !important; }
+
+  /* Top bar : empilé sur très petit écran */
+  .topbar { flex-wrap: wrap; gap: 4px; }
+}
+
+@media (max-width: 480px) {
+  /* XS — iPhone SE / 13 mini */
+  .upgrades-section .upgrades-row > div {
+    flex: 1 1 100% !important;
+  }
+  .leaderboard-panel { max-height: 220px !important; }
+  .aspirine-panel { min-height: 220px !important; max-height: 280px !important; }
+}
+
+/* ── Tap highlight supprimé (iOS) ──────────────────────────── */
+button, a { -webkit-tap-highlight-color: transparent; outline: none; }
+
+/* ── Safe area bottom pour la barre home iOS ───────────────── */
+.safe-bottom { padding-bottom: env(safe-area-inset-bottom, 16px); }

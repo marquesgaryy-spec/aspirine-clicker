@@ -1,0 +1,35 @@
+{
+  "name": "Aspirine Clicker — une de plus.",
+  "short_name": "Aspirine",
+  "description": "Clique. Dissous. Répète. Un jeu idle minimaliste.",
+  "start_url": "/",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "background_color": "#EEEAE2",
+  "theme_color": "#EEEAE2",
+  "lang": "fr",
+  "scope": "/",
+  "categories": ["games", "entertainment"],
+  "icons": [
+    {
+      "src": "/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "screenshots": [
+    {
+      "src": "/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "form_factor": "narrow"
+    }
+  ]
+}
