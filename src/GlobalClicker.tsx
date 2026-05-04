@@ -1040,7 +1040,7 @@ export default function GlobalClicker() {
                 </div>
                 <motion.div key={Math.floor(available/3)}
                   initial={{scale:1.08}} animate={{scale:1}} transition={{duration:0.15}}
-                  className="stat-value" style={{fontSize:"clamp(1.05rem,2.2vw,1.5rem)",fontWeight:900,letterSpacing:"-0.04em",color:"rgba(8,18,52,0.70)",lineHeight:1}}>
+                  className="stat-value" style={{fontSize:"clamp(1.05rem,2.2vw,1.5rem)",fontWeight:900,letterSpacing:"-0.04em",color:darkMode?"rgba(200,220,255,0.90)":"rgba(8,18,52,0.70)",lineHeight:1}}>
                   {fmtFull(available)}
                 </motion.div>
               </div>
@@ -1053,7 +1053,7 @@ export default function GlobalClicker() {
                   dissolutions
                 </div>
                 <motion.div key={combos}
-                  initial={{scale:1.28,color:"rgba(25,90,210,0.9)"}} animate={{scale:1,color:"rgba(8,18,52,0.72)"}}
+                  initial={{scale:1.28,color:"rgba(100,160,255,0.9)"}} animate={{scale:1,color:darkMode?"rgba(200,220,255,0.90)":"rgba(8,18,52,0.72)"}}
                   transition={{duration:0.38,ease:[0.16,1,0.3,1]}}
                   style={{fontSize:"clamp(1.05rem,2.2vw,1.5rem)",fontWeight:900,letterSpacing:"-0.04em",lineHeight:1}}>
                   {fmtFull(combos)}
@@ -1069,7 +1069,7 @@ export default function GlobalClicker() {
                 </div>
                 <motion.div key={cps}
                   initial={{scale:1.15}} animate={{scale:1}} transition={{duration:0.28}}
-                  style={{fontSize:"clamp(1.05rem,2.2vw,1.5rem)",fontWeight:900,letterSpacing:"-0.04em",color:"rgba(40,100,210,0.80)",lineHeight:1}}>
+                  style={{fontSize:"clamp(1.05rem,2.2vw,1.5rem)",fontWeight:900,letterSpacing:"-0.04em",color:darkMode?"rgba(120,180,255,0.95)":"rgba(40,100,210,0.80)",lineHeight:1}}>
                   {cps}
                 </motion.div>
               </div>
