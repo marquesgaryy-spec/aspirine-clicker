@@ -3,7 +3,6 @@ import { motion, AnimatePresence } from "framer-motion";
 import { createClient, RealtimeChannel } from "@supabase/supabase-js";
 
 // ── CONFIG ──────────────────────────────────────────────────
-const SUPABASE_URL      = "https://VOTRE_URL_SUPABASE";
 const SUPABASE_URL      = "https://qzgbpeyyeqfjppxbinho.supabase.co";
 const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF6Z2JwZXl5ZXFmanBweGJpbmhvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc5MDA2NzEsImV4cCI6MjA5MzQ3NjY3MX0.MJu9-k-6ihCbsrzT7LKOKW9iouxPzeKmvAzTdywo-4s";
 const supabase  = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
@@ -343,10 +342,10 @@ function UpCard({
   const tx   = dk ? "#E8EEFF"                   : "rgba(8,18,40,0.88)";
   const sub  = dk ? "rgba(180,200,255,0.65)"    : "rgba(0,0,0,0.48)";
   const faint= dk ? "rgba(180,200,255,0.40)"    : "rgba(0,0,0,0.30)";
-  const bgC  = dk ? "rgba(255,255,255,0.07)"    : "rgba(0,0,0,0.03)";
-  const bgL  = dk ? "rgba(60,130,220,0.20)"     : "rgba(60,130,220,0.09)";
-  const bgM  = dk ? "rgba(60,130,220,0.12)"     : "rgba(60,130,220,0.04)";
-  const brd  = dk ? "rgba(255,255,255,0.15)"    : "rgba(0,0,0,0.09)";
+  const bgC  = dk ? "rgba(255,255,255,0.04)"    : "rgba(0,0,0,0.03)";
+  const bgL  = dk ? "rgba(40,90,180,0.35)"     : "rgba(60,130,220,0.09)";
+  const bgM  = dk ? "rgba(60,130,220,0.08)"     : "rgba(60,130,220,0.04)";
+  const brd  = dk ? "rgba(255,255,255,0.12)"    : "rgba(0,0,0,0.09)";
   const swBg = dk ? "rgba(255,255,255,0.20)"    : "rgba(0,0,0,0.16)";
   const btnBg= dk ? "rgba(255,255,255,0.10)"    : "rgba(0,0,0,0.06)";
   const btnTx= dk ? "rgba(180,200,255,0.55)"    : "rgba(0,0,0,0.26)";
@@ -1036,7 +1035,7 @@ export default function GlobalClicker() {
             <div style={{display:"flex",alignItems:"flex-end",gap:0,flex:1,minHeight:0}}>
               {/* Disponible */}
               <div style={{flex:1}}>
-                <div style={{fontSize:"0.50rem",fontWeight:800,letterSpacing:"0.25em",color:darkMode?"rgba(150,180,255,0.85)":"rgba(8,18,52,0.38)",textTransform:"uppercase",marginBottom:2}}>
+                <div style={{fontSize:darkMode?"0.58rem":"0.50rem",fontWeight:900,letterSpacing:"0.25em",color:darkMode?"#A8C8FF":"rgba(8,18,52,0.38)",textTransform:"uppercase",marginBottom:2}}>
                   disponible
                 </div>
                 <motion.div key={Math.floor(available/3)}
@@ -1050,7 +1049,7 @@ export default function GlobalClicker() {
 
               {/* Dissolutions */}
               <div style={{flex:1}}>
-                <div style={{fontSize:"0.50rem",fontWeight:800,letterSpacing:"0.22em",color:darkMode?"rgba(150,180,255,0.85)":"rgba(8,18,52,0.38)",textTransform:"uppercase",marginBottom:2}}>
+                <div style={{fontSize:darkMode?"0.58rem":"0.50rem",fontWeight:900,letterSpacing:"0.22em",color:darkMode?"#A8C8FF":"rgba(8,18,52,0.38)",textTransform:"uppercase",marginBottom:2}}>
                   dissolutions
                 </div>
                 <motion.div key={combos}
@@ -1065,7 +1064,7 @@ export default function GlobalClicker() {
 
               {/* Cachets/s */}
               <div style={{flex:1}}>
-                <div style={{fontSize:"0.50rem",fontWeight:800,letterSpacing:"0.22em",color:darkMode?"rgba(150,180,255,0.85)":"rgba(8,18,52,0.38)",textTransform:"uppercase",marginBottom:2}}>
+                <div style={{fontSize:darkMode?"0.58rem":"0.50rem",fontWeight:900,letterSpacing:"0.22em",color:darkMode?"#A8C8FF":"rgba(8,18,52,0.38)",textTransform:"uppercase",marginBottom:2}}>
                   cachets/s
                 </div>
                 <motion.div key={cps}
@@ -1225,13 +1224,13 @@ export default function GlobalClicker() {
         {/* ── AMÉLIORATIONS — section indépendante sous la grille ── */}
         <div className="flex-shrink-0 rounded-2xl px-5 py-4 upgrades-section safe-bottom"
           style={{
-            background:C.bgPanel,
+            background:darkMode?"rgba(255,255,255,0.03)":C.bgPanel,
             backdropFilter:"blur(16px)",WebkitBackdropFilter:"blur(16px)",
-            border:`1.5px solid ${C.border}`,
-            boxShadow:"0 2px 14px rgba(0,0,0,0.06),inset 0 1px 0 rgba(255,255,255,0.04)",
+            border:darkMode?"1.5px solid rgba(255,255,255,0.07)":`1.5px solid ${C.border}`,
+            boxShadow:"0 2px 14px rgba(0,0,0,0.06),inset 0 1px 0 rgba(255,255,255,0.02)",
           }}>
           <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:12}}>
-            <span style={{fontSize:"0.68rem",fontWeight:800,letterSpacing:"0.32em",color:C.textSub,textTransform:"uppercase"}}>
+            <span style={{fontSize:"0.68rem",fontWeight:darkMode?900:800,letterSpacing:"0.32em",color:darkMode?"#A8C8FF":C.textSub,textTransform:"uppercase"}}>
               améliorations
             </span>
             <div style={{display:"flex",alignItems:"center",gap:5}}>
