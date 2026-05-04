@@ -847,13 +847,13 @@ export default function GlobalClicker() {
 
   return (
     <div className="fixed inset-0 overflow-hidden"
-      style={{fontFamily:"'Helvetica Neue',Helvetica,Arial,sans-serif",background:C.bg,transition:"background 0.3s"}}>
+      className={darkMode?"dark-mode":""} style={{fontFamily:"'Helvetica Neue',Helvetica,Arial,sans-serif",background:C.bg,transition:"background 0.3s"}}>
 
       <div className="fixed inset-0 pointer-events-none opacity-[0.022]"
         style={{backgroundImage:`url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")`,backgroundSize:"200px"}}/>
       <div className="fixed inset-0 pointer-events-none overflow-hidden">
-        <div className="absolute rounded-full blur-3xl opacity-55 blob1" style={{width:"55vw",height:"55vw",top:"-15%",right:"-8%",background:"radial-gradient(circle,#dde8f5,transparent)"}}/>
-        <div className="absolute rounded-full blur-3xl opacity-40 blob2" style={{width:"40vw",height:"40vw",bottom:"-12%",left:"-5%",background:"radial-gradient(circle,#d0dff0,transparent)"}}/>
+        <div className="absolute rounded-full blur-3xl blob1" style={{width:"55vw",height:"55vw",top:"-15%",right:"-8%",opacity:darkMode?0.10:0.55,background:darkMode?"radial-gradient(circle,#2a4a8f,transparent)":"radial-gradient(circle,#dde8f5,transparent)"}}/>
+        <div className="absolute rounded-full blur-3xl blob2" style={{width:"40vw",height:"40vw",bottom:"-12%",left:"-5%",opacity:darkMode?0.08:0.40,background:darkMode?"radial-gradient(circle,#1a3a6a,transparent)":"radial-gradient(circle,#d0dff0,transparent)"}}/>
       </div>
 
       <AnimatePresence>
@@ -903,7 +903,7 @@ export default function GlobalClicker() {
           </div>
           <div className="flex items-center gap-5">
             <motion.span key={phase} initial={{opacity:0,scale:0.9}} animate={{opacity:1,scale:1}}
-              style={{fontSize:"0.56rem",fontWeight:800,letterSpacing:"0.32em",color:"rgba(40,80,180,0.48)",textTransform:"uppercase"}}>
+              style={{fontSize:"0.56rem",fontWeight:800,letterSpacing:"0.32em",color:darkMode?"rgba(120,160,255,0.65)":"rgba(40,80,180,0.48)",textTransform:"uppercase"}}>
               {PHASES[phase].label}
             </motion.span>
             {/* Dark mode + Pseudo + Déconnexion */}
@@ -970,7 +970,7 @@ export default function GlobalClicker() {
             <div className="flex items-center gap-3">
               <motion.div className="w-2 h-2 rounded-full" style={{background:"rgba(40,80,200,0.52)"}}
                 animate={{opacity:[1,0.15,1]}} transition={{duration:1.4,repeat:Infinity}}/>
-              <span style={{fontSize:"0.58rem",fontWeight:700,letterSpacing:"0.28em",color:"rgba(8,18,52,0.36)",textTransform:"uppercase"}}>
+              <span style={{fontSize:"0.58rem",fontWeight:700,letterSpacing:"0.28em",color:C.textSub,textTransform:"uppercase"}}>
                 {IS_MOCK?"démo":"live"} · {onlineCount} actifs
               </span>
               {aides>0&&autoLabel&&(
@@ -1194,7 +1194,7 @@ export default function GlobalClicker() {
                     </span>
                     <span style={{
                       flex:1,fontWeight:isMe?900:700,fontSize:"0.74rem",
-                      color:isMe?"rgba(22,82,215,0.95)":"rgba(8,18,52,0.72)",
+                      color:isMe?"rgba(100,150,255,0.95)":C.text,
                       overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap",
                     }}>
                       {e.pseudo}{isMe&&" ←"}
@@ -1202,7 +1202,7 @@ export default function GlobalClicker() {
                     <motion.span key={e.clicks} initial={{scale:1.15}} animate={{scale:1}}
                       style={{
                         fontWeight:900,fontSize:"0.74rem",flexShrink:0,
-                        color:isMe?"rgba(22,82,215,0.90)":"rgba(8,18,52,0.58)",
+                        color:isMe?"rgba(100,150,255,0.90)":C.textSub,
                         fontVariantNumeric:"tabular-nums",
                       }}>
                       {fmtFull(e.clicks)}
