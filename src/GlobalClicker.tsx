@@ -434,7 +434,7 @@ export default function GlobalClicker() {
 
   const [globalScore, setGlobalScore]   = useState(0);
   const [leaderboard, setLeaderboard]   = useState<LBEntry[]>([]);
-  const [onlineCount]                   = useState(1);
+  const [onlineCount, setOnlineCount]   = useState(1);
 
   const [dissolveClicks, setDissolveClicks] = useState(0);
   const [isDissolving, setIsDissolving]     = useState(false);
@@ -482,6 +482,12 @@ export default function GlobalClicker() {
   // editInputRef supprimé — plus d'édition pseudo inline
 
   useEffect(()=>{ pseudoRef.current=pseudo; },[pseudo]);
+  // Mettre à jour la présence quand le pseudo est défini
+  useEffect(()=>{
+    if(pseudo&&channelRef.current) {
+      channelRef.current.track({ pseudo, online_at: new Date().toISOString() });
+    }
+  },[pseudo]);
   useEffect(()=>{
     document.documentElement.setAttribute("data-theme", darkMode ? "dark" : "light");
     localStorage.setItem("gc_dark", darkMode ? "1" : "0");
@@ -687,7 +693,7 @@ export default function GlobalClicker() {
   useEffect(()=>{
     if(IS_MOCK) return;
     channelRef.current=supabase.channel("aspirine_realtime", {
-      config: { broadcast: { self: false } }
+      config: { broadcast: { self: false }, presence: { key: pseudo || "anon" } }
     })
       // Score mondial — mis à jour en temps réel
       .on("postgres_changes",{event:"UPDATE",schema:"public",table:"global_score"},
@@ -699,8 +705,24 @@ export default function GlobalClicker() {
           .select("id,pseudo,clicks").order("clicks",{ascending:false}).limit(15);
         if(data) setLeaderboard(data);
       })
-      .subscribe((status)=>{
-        if(status === "SUBSCRIBED") console.log("[Realtime] connecté");
+      // Presence — compter les joueurs connectés en temps réel
+      .on("presence",{event:"sync"},()=>{
+        const state=channelRef.current?.presenceState()??{};
+        setOnlineCount(Object.keys(state).length);
+      })
+      .on("presence",{event:"join"},()=>{
+        const state=channelRef.current?.presenceState()??{};
+        setOnlineCount(Object.keys(state).length);
+      })
+      .on("presence",{event:"leave"},()=>{
+        const state=channelRef.current?.presenceState()??{};
+        setOnlineCount(Object.keys(state).length);
+      })
+      .subscribe(async(status)=>{
+        if(status === "SUBSCRIBED") {
+          // Annoncer sa présence dès la connexion
+          await channelRef.current?.track({ pseudo: pseudo||"anon", online_at: new Date().toISOString() });
+        }
       });
     return()=>{ channelRef.current?.unsubscribe(); };
   },[]);
@@ -910,13 +932,8 @@ export default function GlobalClicker() {
               </AnimatePresence>
             ))}
           </div>
-          <div className="flex items-center gap-5">
-            <motion.span key={phase} initial={{opacity:0,scale:0.9}} animate={{opacity:1,scale:1}}
-              style={{fontSize:"0.56rem",fontWeight:800,letterSpacing:"0.32em",color:darkMode?"rgba(120,160,255,0.65)":"rgba(40,80,180,0.48)",textTransform:"uppercase"}}>
-              {PHASES[phase].label}
-            </motion.span>
-            {/* Pseudo + Déconnexion + Dark mode */}
-            <div className="flex items-center gap-2">
+          {/* Pseudo + Dark mode + Déconnexion */}
+          <div className="flex items-center gap-2">
               <motion.div className="w-2 h-2 rounded-full flex-shrink-0"
                 style={{background:pseudo?"rgba(40,80,200,0.72)":"rgba(10,20,60,0.22)"}}
                 animate={{opacity:pseudo?[1,0.3,1]:1}} transition={{duration:2,repeat:Infinity}}/>
@@ -945,17 +962,16 @@ export default function GlobalClicker() {
                   fontSize:"0.75rem",transition:"all 0.2s",flexShrink:0}}>
                 {darkMode ? "☀️" : "🌙"}
               </button>
-            </div>
           </div>
         </div>
 
         {/* BENTO GRID */}
         <div className="grid gap-3 bento-grid"
-          style={{gridTemplateColumns:"repeat(12,1fr)",gridTemplateRows:"repeat(10,1fr)",minHeight:"60vh"}}>
+          style={{gridTemplateColumns:"repeat(12,1fr)",gridTemplateRows:"repeat(12,1fr)",minHeight:"60vh"}}>
 
           {/* ── A : Score mondial ── */}
           <div className="rounded-2xl p-5 flex flex-col justify-between overflow-hidden score-mondial"
-            style={{gridColumn:"1/8",gridRow:"1/4",
+            style={{gridColumn:"1/8",gridRow:"1/5",
               background:C.bgPanel,backdropFilter:"blur(16px)",WebkitBackdropFilter:"blur(16px)",
               border:`1.5px solid ${C.border}`,boxShadow:"0 2px 20px rgba(0,0,0,0.08),inset 0 1px 0 rgba(255,255,255,0.05)"}}>
             <div>
@@ -972,15 +988,8 @@ export default function GlobalClicker() {
               <motion.div className="w-2 h-2 rounded-full" style={{background:"rgba(40,80,200,0.52)"}}
                 animate={{opacity:[1,0.15,1]}} transition={{duration:1.4,repeat:Infinity}}/>
               <span style={{fontSize:"0.58rem",fontWeight:700,letterSpacing:"0.28em",color:C.textSub,textTransform:"uppercase"}}>
-                {IS_MOCK?"démo":"live"} · {onlineCount} actifs
+                {IS_MOCK?"démo":"live"} · {onlineCount} actif{onlineCount>1?"s":""}
               </span>
-              {aides>0&&autoLabel&&(
-                <motion.span animate={{opacity:[0.3,0.85,0.3]}}
-                  transition={{duration:autoClickMs/1000,repeat:Infinity,ease:"easeInOut"}}
-                  style={{fontSize:"0.55rem",fontWeight:700,letterSpacing:"0.2em",color:"rgba(40,80,200,0.55)",textTransform:"uppercase"}}>
-                  ↻ ×{aides} aide{aides>1?"s":""} {autoLabel}
-                </motion.span>
-              )}
             </div>
           </div>
 
@@ -996,7 +1005,7 @@ export default function GlobalClicker() {
               └──────────────┴──────────┴────────────────┘
           */}
           <div className="rounded-2xl p-5 flex flex-col gap-3 overflow-hidden stats-panel"
-            style={{gridColumn:"8/13",gridRow:"1/4",
+            style={{gridColumn:"8/13",gridRow:"1/5",
               background:C.bgPanelHi,backdropFilter:"blur(16px)",WebkitBackdropFilter:"blur(16px)",
               border:`1.5px solid ${C.border}`,
               boxShadow:"0 4px 28px rgba(40,80,200,0.07),inset 0 1px 0 rgba(255,255,255,0.05)"}}>
@@ -1079,7 +1088,7 @@ export default function GlobalClicker() {
 
           {/* ── D : ASPIRINE + VAGUE ── */}
           <div className="aspirine-panel" style={{
-            gridColumn:"1/8", gridRow:"4/11",
+            gridColumn:"1/8", gridRow:"5/13",
             position:"relative", overflow:"hidden", borderRadius:"1rem",
             background:darkMode?"rgba(30,50,80,0.40)":"rgba(215,232,250,0.38)",
             backdropFilter:"blur(16px)", WebkitBackdropFilter:"blur(16px)",
@@ -1164,7 +1173,7 @@ export default function GlobalClicker() {
 
           {/* ── C : Leaderboard Top 15 — pleine hauteur, sans stats parasites ── */}
           <div className="rounded-2xl flex flex-col overflow-hidden leaderboard-panel"
-            style={{gridColumn:"8/13",gridRow:"4/11",
+            style={{gridColumn:"8/13",gridRow:"5/13",
               background:C.bgPanel,backdropFilter:"blur(16px)",WebkitBackdropFilter:"blur(16px)",
               border:`1.5px solid ${C.border}`,boxShadow:"0 2px 20px rgba(0,0,0,0.08),inset 0 1px 0 rgba(255,255,255,0.05)"}}>
 
