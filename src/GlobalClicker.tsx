@@ -887,7 +887,7 @@ export default function GlobalClicker() {
 
   return (
     <div className={`fixed inset-0${darkMode?" dark-mode":""}`}
-      style={{fontFamily:"'Helvetica Neue',Helvetica,Arial,sans-serif",background:C.bg,transition:"background 0.3s",overflowY:"auto",overflowX:"hidden"}}>
+      style={{fontFamily:"'Helvetica Neue',Helvetica,Arial,sans-serif",background:C.bg,transition:"background 0.3s",overflowY:"auto",overflowX:"hidden",minHeight:"100vh",minHeight:"-webkit-fill-available"}}>
 
       <div className="fixed inset-0 pointer-events-none opacity-[0.022]"
         style={{backgroundImage:`url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")`,backgroundSize:"200px"}}/>
@@ -1287,7 +1287,7 @@ export default function GlobalClicker() {
               <span style={{fontSize:"0.55rem",fontWeight:darkMode?800:700,color:darkMode?"#A8C8FF":"rgba(8,18,52,0.32)",letterSpacing:"0.12em",textTransform:"uppercase"}}>cachets dispo</span>
             </div>
           </div>
-          <div className="upgrades-row" style={{display:"flex",gap:12}}>
+          <div className="upgrades-row" style={{display:"flex",gap:12,flexWrap:"wrap"}}>
             <UpCard dark={darkMode}
               label="Eau chaude" icon="🌡"
               desc={UPGRADES[0].desc(chaleur)}
@@ -1314,7 +1314,7 @@ export default function GlobalClicker() {
               {phase>=1&&(
                 <motion.div initial={{opacity:0,x:14}} animate={{opacity:1,x:0}}
                   transition={{duration:0.32,ease:[0.16,1,0.3,1]}}
-                  style={{display:"flex",gap:12,flex:"2 1 0"}}>
+                  style={{display:"contents"}}>
                   <UpCard dark={darkMode}
                     label="Labo R&D" icon="🔬"
                     desc={labo>0?`+${labo} cachet${labo>1?"s":""}/dissolution · niv ${labo}/10`:"+1 cachet/dissolution au niv 1 · niv 0/10"}
