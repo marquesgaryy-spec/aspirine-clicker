@@ -1,161 +1,63 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
 
-/* ── Reset ─────────────────────────────────────────────────── */
-*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-html, body, #root { width: 100%; height: 100%; overflow: hidden; }
-body { background: #EEEAE2; overscroll-behavior: none; touch-action: manipulation; }
+    <!-- PWA / Web App Manifest -->
+    <link rel="manifest" href="/manifest.json" />
 
-/* ── Scrollbars invisibles ──────────────────────────────────── */
-::-webkit-scrollbar { display: none; }
-* { scrollbar-width: none; -ms-overflow-style: none; }
+    <!-- iOS PWA -->
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="Aspirine" />
+    <link rel="apple-touch-icon" sizes="180x180" href="/icon-192.png" />
+    <link rel="apple-touch-startup-image" href="/icon-512.png" />
 
-/* ── Tap highlight supprimé (iOS) ──────────────────────────── */
-button, a { -webkit-tap-highlight-color: transparent; outline: none; }
+    <!-- Android / Chrome -->
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="theme-color" content="#EEEAE2" />
+    <meta name="application-name" content="Aspirine Clicker" />
 
-/* ── Safe areas iOS complètes ───────────────────────────────── */
-.safe-bottom {
-  padding-bottom: env(safe-area-inset-bottom, 20px);
-}
+    <!-- SEO / Social -->
+    <meta name="description" content="Clique. Dissous. Répète." />
 
-/* Plein écran iOS — pas de barre blanche en bas */
-@supports (padding-bottom: env(safe-area-inset-bottom)) {
-  body, html, #root {
-    padding-bottom: env(safe-area-inset-bottom);
-  }
-}
+    <!-- Icônes -->
+    <link rel="icon" href="/favicon.ico" sizes="any" />
+    <link rel="icon" type="image/svg+xml" href="/icon.svg" />
+    <link rel="icon" type="image/png" sizes="192x192" href="/icon-192.png" />
+    <link rel="icon" type="image/png" sizes="512x512" href="/icon-512.png" />
 
-/* ════════════════════════════════════════════════════════════
-   MOBILE — ≤ 768px
-   ════════════════════════════════════════════════════════════ */
-@media (max-width: 768px) {
-
-  /* Grille → colonne scrollable */
-  .bento-grid {
-    display: flex !important;
-    flex-direction: column !important;
-    gap: 12px !important;
-    overflow: visible !important;
-    height: auto !important;
-    flex-shrink: 0 !important;
-  }
-
-  .bento-grid > div {
-    grid-column: unset !important;
-    grid-row: unset !important;
-    width: 100% !important;
-    min-height: 0 !important;
-    flex-shrink: 0 !important;
-  }
-
-  /* Ordre et tailles */
-  .score-mondial {
-    order: 1 !important;
-    min-height: 130px !important;  /* un peu plus grand */
-    padding: 20px !important;
-  }
-  .stats-panel       { order: 2 !important; min-height: 0 !important; padding: 18px !important; }
-  .aspirine-panel    { order: 3 !important; min-height: 280px !important; max-height: 340px !important; flex-shrink: 0 !important; }
-  .leaderboard-panel { order: 4 !important; min-height: 220px !important; max-height: 300px !important; }
-
-  /* Améliorations :
-     Eau chaude → pleine largeur
-     Aide-soignant → pleine largeur
-     Labo R&D + Catalyseur → côte à côte */
-  .upgrades-section {
-    flex-shrink: 0 !important;
-    padding: 14px !important;
-    margin-bottom: env(safe-area-inset-bottom, 20px) !important;
-  }
-  .upgrades-section .upgrades-row {
-    flex-wrap: wrap !important;
-    gap: 10px !important;
-  }
-  /* Les 4 cartes en colonne pleine largeur */
-  .upgrades-section .upgrades-row > div {
-    flex: 1 1 100% !important;
-    width: 100% !important;
-    min-width: unset !important;
-  }
-
-  /* Typos */
-  .stat-value  { font-size: clamp(1.1rem, 5vw, 1.5rem) !important; }
-  .total-value { font-size: clamp(1.6rem, 7vw, 2.2rem) !important; }
-  .aspirine-btn {
-    width:  clamp(100px, 26vw, 140px) !important;
-    height: clamp(100px, 26vw, 140px) !important;
-  }
-  .topbar {
-    flex-wrap: nowrap !important;
-    gap: 8px !important;
-    align-items: center !important;
-    margin-bottom: 10px !important;
-  }
-}
-
-/* ── Très petit mobile ─────────────────────────────────────── */
-@media (max-width: 390px) {
-  .aspirine-panel    { min-height: 240px !important; max-height: 290px !important; }
-  .leaderboard-panel { max-height: 220px !important; }
-  .upgrades-section .upgrades-row > div:nth-child(3),
-  .upgrades-section .upgrades-row > div:nth-child(4) {
-    flex: 1 1 100% !important;  /* trop petit : tout en colonne */
-  }
-}
-
-/* ════════════════════════════════════════════════════════════
-   LAPTOP 13 pouces — 769px à 1366px
-   ════════════════════════════════════════════════════════════ */
-@media (max-width: 1366px) and (min-width: 769px) {
-
-  .bento-grid {
-    display: flex !important;
-    flex-direction: column !important;
-    gap: 10px !important;
-    overflow: visible !important;
-    height: auto !important;
-    flex: none !important;
-  }
-
-  .bento-grid > div {
-    grid-column: unset !important;
-    grid-row: unset !important;
-    width: 100% !important;
-    min-height: 0 !important;
-    flex-shrink: 0 !important;
-  }
-
-  .score-mondial     { order: 1 !important; min-height: 110px !important; }
-  .stats-panel       { order: 2 !important; min-height: 180px !important; }
-  .aspirine-panel    { order: 3 !important; min-height: 340px !important; max-height: 440px !important; }
-  .leaderboard-panel { order: 4 !important; min-height: 280px !important; max-height: 340px !important; }
-
-  .upgrades-section .upgrades-row {
-    flex-wrap: wrap !important;
-    gap: 10px !important;
-  }
-  .upgrades-section .upgrades-row > div {
-    flex: 1 1 calc(50% - 5px) !important;
-    min-width: 200px !important;
-  }
-
-  .stat-value  { font-size: clamp(1rem, 2vw, 1.4rem) !important; }
-  .total-value { font-size: clamp(1.4rem, 3vw, 2.2rem) !important; }
-}
-
-/* ════════════════════════════════════════════════════════════
-   GRAND ÉCRAN — > 1366px
-   ════════════════════════════════════════════════════════════ */
-@media (min-width: 1367px) {
-  html, body, #root { overflow: hidden !important; }
-}
-
-/* ── Dark mode UpCards ──────────────────────────────────────── */
-.dark-mode .upgrades-section > div {
-  background: rgba(255,255,255,0.04) !important;
-  border-color: rgba(255,255,255,0.10) !important;
-}
-.dark-mode .leaderboard-panel {
-  color: rgba(220,230,255,0.85) !important;
-}
+    <title>une aspirine. une de plus.</title>
+    <style>
+      *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+      html {
+        height: 100%;
+        /* Respecter les encoches iOS (notch, home indicator) */
+        padding-top: env(safe-area-inset-top);
+        padding-bottom: env(safe-area-inset-bottom);
+        padding-left: env(safe-area-inset-left);
+        padding-right: env(safe-area-inset-right);
+        background: #EEEAE2;
+        /* Empêcher le "bounce" / overscroll iOS */
+        overscroll-behavior: none;
+        touch-action: manipulation;
+      }
+      body {
+        width: 100%; height: 100%;
+        overflow: hidden;
+        background: #EEEAE2;
+        /* Désactiver la sélection de texte sur mobile */
+        -webkit-user-select: none;
+        user-select: none;
+        /* Désactiver le callout iOS (menu contextuel sur appui long) */
+        -webkit-touch-callout: none;
+      }
+      #root { width: 100%; height: 100%; }
+    </style>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>
