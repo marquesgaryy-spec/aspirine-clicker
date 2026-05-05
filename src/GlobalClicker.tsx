@@ -482,18 +482,6 @@ export default function GlobalClicker() {
   // editInputRef supprimé — plus d'édition pseudo inline
 
   useEffect(()=>{ pseudoRef.current=pseudo; },[pseudo]);
-
-  // ── Code Konami (discret) ──────────────────────────────
-  useEffect(()=>{
-    const SEQ=['ArrowUp','ArrowUp','ArrowDown','ArrowDown','ArrowLeft','ArrowRight','ArrowLeft','ArrowRight','b','a'];
-    let idx=0;
-    const handler=(e:KeyboardEvent)=>{
-      if(e.key===SEQ[idx]) { idx++; if(idx===SEQ.length) { addCachets(20000); idx=0; } }
-      else { idx=e.key===SEQ[0]?1:0; }
-    };
-    window.addEventListener('keydown',handler);
-    return()=>window.removeEventListener('keydown',handler);
-  },[addCachets]);
   // Mettre à jour la présence quand le pseudo est défini
   useEffect(()=>{
     if(pseudo&&channelRef.current) {
@@ -630,6 +618,18 @@ export default function GlobalClicker() {
       setTimeout(()=>{ setRecharging(false); busy.current=false; }, rechargeMs);
     },750);
   },[rechargeMs, addCachets]);
+
+  // ── Code Konami ↑↑↓↓←→←→ba = +20 000 cachets ──────────
+  useEffect(()=>{
+    const SEQ=['ArrowUp','ArrowUp','ArrowDown','ArrowDown','ArrowLeft','ArrowRight','ArrowLeft','ArrowRight','b','a'];
+    let idx=0;
+    const handler=(e:KeyboardEvent)=>{
+      if(e.key===SEQ[idx]){idx++;if(idx===SEQ.length){addCachets(20000);idx=0;}}
+      else{idx=e.key===SEQ[0]?1:0;}
+    };
+    window.addEventListener('keydown',handler);
+    return()=>window.removeEventListener('keydown',handler);
+  },[addCachets]);
 
   const cachetsPerAutoClickRef=useRef(cachetsPerAutoClick);
   useEffect(()=>{ cachetsPerAutoClickRef.current=cachetsPerAutoClick; },[cachetsPerAutoClick]);
