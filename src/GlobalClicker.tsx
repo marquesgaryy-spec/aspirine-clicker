@@ -482,12 +482,7 @@ export default function GlobalClicker() {
   // editInputRef supprimé — plus d'édition pseudo inline
 
   useEffect(()=>{ pseudoRef.current=pseudo; },[pseudo]);
-  // Mettre à jour la présence quand le pseudo est défini
-  useEffect(()=>{
-    if(pseudo&&channelRef.current) {
-      channelRef.current.track({ pseudo, online_at: new Date().toISOString() });
-    }
-  },[pseudo]);
+  // Presence trackée directement dans le canal (useEffect [pseudo])
   useEffect(()=>{
     document.documentElement.setAttribute("data-theme", darkMode ? "dark" : "light");
     localStorage.setItem("gc_dark", darkMode ? "1" : "0");
@@ -704,8 +699,10 @@ export default function GlobalClicker() {
 
   useEffect(()=>{
     if(IS_MOCK) return;
+    // Nettoyer l'ancien canal si existe
+    if(channelRef.current) { channelRef.current.unsubscribe(); channelRef.current=null; }
     channelRef.current=supabase.channel("aspirine_realtime", {
-      config: { broadcast: { self: false }, presence: { key: pseudo || "anon" } }
+      config: { broadcast: { self: false }, presence: { key: pseudo || `anon_${Math.random().toString(36).slice(2,8)}` } }
     })
       // Score mondial — mis à jour en temps réel
       .on("postgres_changes",{event:"UPDATE",schema:"public",table:"global_score"},
@@ -736,8 +733,8 @@ export default function GlobalClicker() {
           await channelRef.current?.track({ pseudo: pseudo||"anon", online_at: new Date().toISOString() });
         }
       });
-    return()=>{ channelRef.current?.unsubscribe(); };
-  },[]);
+    return()=>{ channelRef.current?.unsubscribe(); channelRef.current=null; };
+  },[pseudo]);  // se re-souscrit quand le pseudo est défini
 
   const flush=useCallback(throttle(async(count:number,p:string,total:number)=>{
     if(!p) return;
@@ -929,7 +926,7 @@ export default function GlobalClicker() {
         ))}
       </AnimatePresence>
 
-      <div className="relative p-3 md:p-4 flex flex-col gap-3" style={{minHeight:"100vh",paddingTop:"max(12px, env(safe-area-inset-top, 12px))"}}>
+      <div className="relative p-3 md:p-4 flex flex-col gap-3" style={{minHeight:"100vh",paddingTop:"max(12px, env(safe-area-inset-top, 12px))",paddingBottom:"max(16px, env(safe-area-inset-bottom, 16px))"}}>
 
         {/* TOP BAR */}
         <div className="flex-shrink-0 flex items-center justify-between px-1 topbar">
