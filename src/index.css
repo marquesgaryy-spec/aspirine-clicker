@@ -72,17 +72,11 @@ button, a { -webkit-tap-highlight-color: transparent; outline: none; }
     flex-wrap: wrap !important;
     gap: 10px !important;
   }
-  /* Les 2 premières cartes : pleine largeur */
-  .upgrades-section .upgrades-row > div:nth-child(1),
-  .upgrades-section .upgrades-row > div:nth-child(2) {
+  /* Les 4 cartes en colonne pleine largeur */
+  .upgrades-section .upgrades-row > div {
     flex: 1 1 100% !important;
     width: 100% !important;
-  }
-  /* Les 2 dernières cartes : côte à côte */
-  .upgrades-section .upgrades-row > div:nth-child(3),
-  .upgrades-section .upgrades-row > div:nth-child(4) {
-    flex: 1 1 calc(50% - 5px) !important;
-    min-width: 140px !important;
+    min-width: unset !important;
   }
 
   /* Typos */
