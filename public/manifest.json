@@ -3,7 +3,7 @@
   "short_name": "Aspirine",
   "description": "Clique. Dissous. Répète. Un jeu idle minimaliste.",
   "start_url": "/",
-  "display": "standalone",
+  "display": "fullscreen",
   "orientation": "portrait-primary",
   "background_color": "#EEEAE2",
   "theme_color": "#EEEAE2",
@@ -22,14 +22,6 @@
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "any maskable"
-    }
-  ],
-  "screenshots": [
-    {
-      "src": "/icon-512.png",
-      "sizes": "512x512",
-      "type": "image/png",
-      "form_factor": "narrow"
     }
   ]
 }
