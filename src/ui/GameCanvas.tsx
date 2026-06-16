@@ -84,8 +84,6 @@ export default function GameCanvas({ pseudo }: Props) {
       <canvas
         ref={canvasRef}
         style={{ width: '100%', height: '100%', display: 'block', cursor: locked ? 'none' : 'default' }}
-        width={window.innerWidth}
-        height={window.innerHeight}
       />
 
       {/* Crosshair — visible only when locked */}

@@ -56,16 +56,21 @@ export class GameEngine {
   constructor(canvas: HTMLCanvasElement) {
     this.canvas = canvas
 
+    const w = window.innerWidth
+    const h = window.innerHeight
+    canvas.width  = w
+    canvas.height = h
+
     this.renderer = new THREE.WebGLRenderer({ canvas, antialias: true })
     this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2))
-    this.renderer.setSize(canvas.clientWidth, canvas.clientHeight)
+    this.renderer.setSize(w, h)
     this.renderer.shadowMap.enabled = true
     this.renderer.shadowMap.type    = THREE.PCFSoftShadowMap
 
     this.scene = new THREE.Scene()
     this.scene.background = new THREE.Color(0x87ceeb)
 
-    this.camera = new THREE.PerspectiveCamera(75, canvas.clientWidth / canvas.clientHeight, 0.1, 300)
+    this.camera = new THREE.PerspectiveCamera(75, w / h, 0.1, 300)
     this.camera.position.copy(this.pos)
 
     this.grid      = new WorldGrid(this.scene)
@@ -147,8 +152,9 @@ export class GameEngine {
     c.addEventListener('wheel', e => { e.preventDefault() }, { passive: false })
 
     window.addEventListener('resize', () => {
-      this.renderer.setSize(c.clientWidth, c.clientHeight)
-      this.camera.aspect = c.clientWidth / c.clientHeight
+      const rw = window.innerWidth, rh = window.innerHeight
+      this.renderer.setSize(rw, rh)
+      this.camera.aspect = rw / rh
       this.camera.updateProjectionMatrix()
     })
   }
