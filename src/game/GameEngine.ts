@@ -3,46 +3,55 @@ import { WorldGrid } from './WorldGrid'
 import { DayNightCycle } from './DayNightCycle'
 import { CarSystem } from './CarSystem'
 import type { ItemType } from './items'
-import { VEHICLE_TYPES } from './items'
+import { VEHICLE_TYPES, getItemDef } from './items'
 import { buildMesh } from './meshBuilders'
 
 const CELL = 2
-
-export interface PlacementMode {
-  type: ItemType
-  rotation: number
-}
+const PLAYER_HEIGHT = 1.7   // eye height
+const PLAYER_RADIUS = 0.38
+const WALK_SPEED    = 6
+const FLY_SPEED     = 8
+const GRAVITY       = 22
+const JUMP_VEL      = 9
+const MAX_REACH     = 7     // max placement distance
 
 export class GameEngine {
   renderer: THREE.WebGLRenderer
-  scene: THREE.Scene
-  camera: THREE.PerspectiveCamera
-  grid: WorldGrid
+  scene:    THREE.Scene
+  camera:   THREE.PerspectiveCamera
+  grid:     WorldGrid
   dayNight: DayNightCycle
   carSystem: CarSystem
 
-  private rafId = 0
-  private lastTime = 0
-  private keys = new Set<string>()
-  private mouse = new THREE.Vector2()
-  private raycaster = new THREE.Raycaster()
-  private ghostMesh: THREE.Group | null = null
-  private currentGhostType: ItemType | null = null
-  private isPlacing = false
-  private isRemoving = false
   private canvas: HTMLCanvasElement
+  private rafId  = 0
+  private lastTime = 0
 
-  // Camera movement
-  private camTarget = new THREE.Vector3(0, 0, 0)
-  private camRadius = 20
-  private camTheta = Math.PI / 4 // horizontal angle
-  private camPhi = Math.PI / 3.5 // vertical angle
+  // FPS player state
+  private pos   = new THREE.Vector3(0, PLAYER_HEIGHT, 0)
+  private yaw   = 0
+  private pitch = 0
+  private velY  = 0
+  private isFlying    = false
+  private onGround    = false
+  private lastSpaceMs = 0
+  private spaceHeld   = false
+  private shiftHeld   = false
+  private locked      = false  // pointer lock active
 
-  // Callbacks
+  private keys = new Set<string>()
+
+  // Placement
+  placement = { type: 'grass' as ItemType, rotation: 0 }
+  private ghostMesh: THREE.Group | null = null
+  private ghostType: ItemType | null = null
+  private pendingPlace  = false
+  private pendingRemove = false
+  private hitGx: number | null = null
+  private hitGz: number | null = null
+
   onTimeUpdate?: (t: string) => void
-  onHoverCell?: (gx: number | null, gz: number | null) => void
-
-  placement: PlacementMode = { type: 'grass', rotation: 0 }
+  onLockChange?: (locked: boolean) => void
 
   constructor(canvas: HTMLCanvasElement) {
     this.canvas = canvas
@@ -51,77 +60,91 @@ export class GameEngine {
     this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2))
     this.renderer.setSize(canvas.clientWidth, canvas.clientHeight)
     this.renderer.shadowMap.enabled = true
-    this.renderer.shadowMap.type = THREE.PCFSoftShadowMap
+    this.renderer.shadowMap.type    = THREE.PCFSoftShadowMap
 
     this.scene = new THREE.Scene()
     this.scene.background = new THREE.Color(0x87ceeb)
 
-    this.camera = new THREE.PerspectiveCamera(60, canvas.clientWidth / canvas.clientHeight, 0.1, 300)
-    this.updateCamera()
+    this.camera = new THREE.PerspectiveCamera(75, canvas.clientWidth / canvas.clientHeight, 0.1, 300)
+    this.camera.position.copy(this.pos)
 
-    this.grid = new WorldGrid(this.scene)
-    this.dayNight = new DayNightCycle(this.scene, this.renderer)
+    this.grid      = new WorldGrid(this.scene)
+    this.dayNight  = new DayNightCycle(this.scene, this.renderer)
     this.carSystem = new CarSystem(this.grid)
 
     this.bindEvents()
     this.start()
   }
 
-  private updateCamera() {
-    const x = this.camTarget.x + this.camRadius * Math.sin(this.camTheta) * Math.cos(this.camPhi)
-    const y = this.camRadius * Math.sin(this.camPhi)
-    const z = this.camTarget.z + this.camRadius * Math.cos(this.camTheta) * Math.cos(this.camPhi)
-    this.camera.position.set(x, y, z)
-    this.camera.lookAt(this.camTarget)
-  }
+  // ── Events ──────────────────────────────────────────────────────────────────
 
   private bindEvents() {
     const c = this.canvas
 
-    window.addEventListener('keydown', e => this.keys.add(e.key.toLowerCase()))
-    window.addEventListener('keyup', e => this.keys.delete(e.key.toLowerCase()))
-
-    c.addEventListener('mousemove', e => {
-      const rect = c.getBoundingClientRect()
-      this.mouse.set(
-        ((e.clientX - rect.left) / rect.width) * 2 - 1,
-        -((e.clientY - rect.top) / rect.height) * 2 + 1
-      )
-    })
-
-    c.addEventListener('mousedown', e => {
-      if (e.button === 0) this.isPlacing = true
-      if (e.button === 2) this.isRemoving = true
-    })
-    c.addEventListener('mouseup', e => {
-      if (e.button === 0) this.isPlacing = false
-      if (e.button === 2) this.isRemoving = false
-    })
-    c.addEventListener('contextmenu', e => e.preventDefault())
-
-    // Orbit with right drag (or middle)
-    let dragging = false
-    let lastX = 0, lastY = 0
-    c.addEventListener('mousedown', e => {
-      if (e.button === 1 || (e.button === 2 && e.altKey)) {
-        dragging = true; lastX = e.clientX; lastY = e.clientY
+    // Pointer lock
+    c.addEventListener('click', () => {
+      if (!this.locked) c.requestPointerLock()
+      else {
+        // Place / remove
+        if (this.hitGx !== null) this.pendingPlace = true
       }
     })
-    window.addEventListener('mousemove', e => {
-      if (!dragging) return
-      const dx = e.clientX - lastX
-      const dy = e.clientY - lastY
-      this.camTheta -= dx * 0.005
-      this.camPhi = Math.max(0.2, Math.min(Math.PI / 2.2, this.camPhi - dy * 0.005))
-      lastX = e.clientX; lastY = e.clientY
-      this.updateCamera()
+    c.addEventListener('contextmenu', e => {
+      e.preventDefault()
+      if (this.locked && this.hitGx !== null) this.pendingRemove = true
     })
-    window.addEventListener('mouseup', () => { dragging = false })
 
-    c.addEventListener('wheel', e => {
-      this.camRadius = Math.max(5, Math.min(60, this.camRadius + e.deltaY * 0.04))
-      this.updateCamera()
+    document.addEventListener('pointerlockchange', () => {
+      this.locked = document.pointerLockElement === c
+      this.onLockChange?.(this.locked)
     })
+
+    document.addEventListener('mousemove', e => {
+      if (!this.locked) return
+      this.yaw  -= e.movementX * 0.0022
+      this.pitch = Math.max(-Math.PI / 2 + 0.05, Math.min(Math.PI / 2 - 0.05, this.pitch - e.movementY * 0.0022))
+    })
+
+    // Place on left click while locked
+    c.addEventListener('mousedown', e => {
+      if (!this.locked) return
+      if (e.button === 0) this.pendingPlace  = true
+      if (e.button === 2) this.pendingRemove = true
+    })
+
+    window.addEventListener('keydown', e => {
+      const k = e.key.toLowerCase()
+      this.keys.add(k)
+
+      if (k === ' ') {
+        e.preventDefault()
+        this.spaceHeld = true
+        const now = Date.now()
+        if (now - this.lastSpaceMs < 300) {
+          this.isFlying = !this.isFlying
+          this.velY = 0
+        } else if (!this.isFlying && this.onGround) {
+          this.velY = JUMP_VEL
+          this.onGround = false
+        }
+        this.lastSpaceMs = now
+      }
+      if (k === 'shift') this.shiftHeld = true
+      if (k === 'r') {
+        this.keys.delete('r')
+        this.placement.rotation = (this.placement.rotation + 1) % 4
+      }
+    })
+
+    window.addEventListener('keyup', e => {
+      const k = e.key.toLowerCase()
+      this.keys.delete(k)
+      if (k === ' ')     this.spaceHeld = false
+      if (k === 'shift') this.shiftHeld = false
+    })
+
+    // Scroll = nothing (zoom removed, FPS mode)
+    c.addEventListener('wheel', e => { e.preventDefault() }, { passive: false })
 
     window.addEventListener('resize', () => {
       this.renderer.setSize(c.clientWidth, c.clientHeight)
@@ -130,116 +153,186 @@ export class GameEngine {
     })
   }
 
-  private getGroundIntersect(): THREE.Vector3 | null {
-    this.raycaster.setFromCamera(this.mouse, this.camera)
-    const plane = new THREE.Plane(new THREE.Vector3(0, 1, 0), 0)
-    const target = new THREE.Vector3()
-    this.raycaster.ray.intersectPlane(plane, target)
-    return target
-  }
+  // ── Tick ────────────────────────────────────────────────────────────────────
 
-  private worldToGrid(wx: number, wz: number): [number, number] {
-    return [Math.round(wx / CELL), Math.round(wz / CELL)]
-  }
-
-  private updateGhost(gx: number, gz: number) {
-    if (this.currentGhostType !== this.placement.type) {
-      if (this.ghostMesh) { this.scene.remove(this.ghostMesh) }
-      this.ghostMesh = buildMesh(this.placement.type)
-      this.ghostMesh.traverse(c => {
-        if ((c as THREE.Mesh).isMesh) {
-          const m = c as THREE.Mesh
-          if (Array.isArray(m.material)) {
-            m.material = m.material.map(mt => {
-              const clone = (mt as THREE.Material).clone() as THREE.MeshLambertMaterial
-              clone.transparent = true; clone.opacity = 0.55
-              return clone
-            })
-          } else {
-            const clone = (m.material as THREE.Material).clone() as THREE.MeshLambertMaterial
-            clone.transparent = true; clone.opacity = 0.55
-            m.material = clone
-          }
-        }
-      })
-      this.scene.add(this.ghostMesh)
-      this.currentGhostType = this.placement.type
-    }
-    if (this.ghostMesh) {
-      this.ghostMesh.position.set(gx * CELL, 0, gz * CELL)
-      this.ghostMesh.rotation.y = this.placement.rotation * (Math.PI / 2)
-    }
-  }
-
-  private tick = (time: number) => {
+  private tick = (now: number) => {
     this.rafId = requestAnimationFrame(this.tick)
-    const delta = time - this.lastTime
-    this.lastTime = time
+    const dt = Math.min((now - this.lastTime) / 1000, 0.05)
+    this.lastTime = now
 
-    // Camera WASD
-    const speed = 0.12
-    const fwd = new THREE.Vector3(Math.sin(this.camTheta), 0, Math.cos(this.camTheta))
-    const right = new THREE.Vector3(Math.cos(this.camTheta), 0, -Math.sin(this.camTheta))
-    if (this.keys.has('z') || this.keys.has('arrowup'))    this.camTarget.addScaledVector(fwd, -speed)
-    if (this.keys.has('s') || this.keys.has('arrowdown'))  this.camTarget.addScaledVector(fwd, speed)
-    if (this.keys.has('q') || this.keys.has('arrowleft'))  this.camTarget.addScaledVector(right, -speed)
-    if (this.keys.has('d') || this.keys.has('arrowright')) this.camTarget.addScaledVector(right, speed)
-    if (this.keys.has('z') || this.keys.has('s') || this.keys.has('q') || this.keys.has('d') ||
-        this.keys.has('arrowup') || this.keys.has('arrowdown') || this.keys.has('arrowleft') || this.keys.has('arrowright')) {
-      this.updateCamera()
-    }
+    this.movePlayer(dt)
+    this.updateCamera()
+    this.updateGhost()
 
-    // Rotate placement with R
-    if (this.keys.has('r')) {
-      this.keys.delete('r')
-      this.placement.rotation = (this.placement.rotation + 1) % 4
-    }
+    if (this.pendingPlace)  { this.doPlace();  this.pendingPlace  = false }
+    if (this.pendingRemove) { this.doRemove(); this.pendingRemove = false }
 
-    // Ghost + placement
-    const hit = this.getGroundIntersect()
-    if (hit) {
-      const [gx, gz] = this.worldToGrid(hit.x, hit.z)
-      this.updateGhost(gx, gz)
-      if (this.isPlacing) {
-        this.placeAt(gx, gz)
-      } else if (this.isRemoving) {
-        this.grid.remove(gx, gz)
-      }
-    }
-
-    this.dayNight.update(delta)
-    this.carSystem.update(delta)
-
+    this.dayNight.update(dt * 1000)
+    this.carSystem.update(dt * 1000)
     if (this.onTimeUpdate) this.onTimeUpdate(this.dayNight.getTimeString())
 
     this.renderer.render(this.scene, this.camera)
   }
 
-  private placeAt(gx: number, gz: number) {
-    const type = this.placement.type
-    this.grid.place(gx, gz, { type, rotation: this.placement.rotation })
+  // ── Movement ────────────────────────────────────────────────────────────────
 
-    // If it's a vehicle, register in car system
-    if (VEHICLE_TYPES.has(type)) {
-      const obj = this.grid.objects.get(`${gx}_${gz}`)
-      if (obj) this.carSystem.spawnCar(obj, gx, gz)
+  private movePlayer(dt: number) {
+    const fwd   = new THREE.Vector3( Math.sin(this.yaw), 0, Math.cos(this.yaw))
+    const right = new THREE.Vector3( Math.cos(this.yaw), 0,-Math.sin(this.yaw))
+
+    let dx = 0, dz = 0
+    if (this.keys.has('z') || this.keys.has('w') || this.keys.has('arrowup'))    { dx -= fwd.x;   dz -= fwd.z   }
+    if (this.keys.has('s') || this.keys.has('arrowdown'))                         { dx += fwd.x;   dz += fwd.z   }
+    if (this.keys.has('q') || this.keys.has('a') || this.keys.has('arrowleft'))  { dx -= right.x; dz -= right.z }
+    if (this.keys.has('d') || this.keys.has('arrowright'))                        { dx += right.x; dz += right.z }
+
+    const len = Math.sqrt(dx * dx + dz * dz)
+    if (len > 0) { dx /= len; dz /= len }
+
+    const speed = this.isFlying ? FLY_SPEED : WALK_SPEED
+    dx *= speed * dt
+    dz *= speed * dt
+
+    if (this.isFlying) {
+      if (this.spaceHeld) this.pos.y += FLY_SPEED * dt
+      if (this.shiftHeld) this.pos.y -= FLY_SPEED * dt
+    } else {
+      this.velY -= GRAVITY * dt
+      this.pos.y += this.velY * dt
+      const ground = PLAYER_HEIGHT
+      if (this.pos.y <= ground) {
+        this.pos.y  = ground
+        this.velY   = 0
+        this.onGround = true
+      } else {
+        this.onGround = false
+      }
+    }
+
+    // XZ collision
+    const nx = this.pos.x + dx
+    const nz = this.pos.z + dz
+    if (!this.collidesAt(nx, this.pos.z)) this.pos.x = nx
+    if (!this.collidesAt(this.pos.x, nz)) this.pos.z = nz
+  }
+
+  private collidesAt(x: number, z: number): boolean {
+    // Check corners of player AABB
+    for (const [cx, cz] of [
+      [x - PLAYER_RADIUS, z - PLAYER_RADIUS],
+      [x + PLAYER_RADIUS, z - PLAYER_RADIUS],
+      [x - PLAYER_RADIUS, z + PLAYER_RADIUS],
+      [x + PLAYER_RADIUS, z + PLAYER_RADIUS],
+    ]) {
+      const gx = Math.round(cx / CELL)
+      const gz = Math.round(cz / CELL)
+      if (this.grid.isSolid(gx, gz)) return true
+    }
+    return false
+  }
+
+  // ── Camera ──────────────────────────────────────────────────────────────────
+
+  private updateCamera() {
+    this.camera.position.copy(this.pos)
+    const dir = new THREE.Vector3(
+      Math.sin(this.yaw) * Math.cos(this.pitch),
+      Math.sin(this.pitch),
+      Math.cos(this.yaw) * Math.cos(this.pitch)
+    )
+    this.camera.lookAt(this.pos.clone().add(dir))
+  }
+
+  // ── Ghost / placement ───────────────────────────────────────────────────────
+
+  private getCamDir(): THREE.Vector3 {
+    return new THREE.Vector3(
+      Math.sin(this.yaw) * Math.cos(this.pitch),
+      Math.sin(this.pitch),
+      Math.cos(this.yaw) * Math.cos(this.pitch)
+    ).normalize()
+  }
+
+  private getPlacementCell(): [number, number] | null {
+    const ray = new THREE.Raycaster()
+    ray.setFromCamera(new THREE.Vector2(0, 0), this.camera)
+
+    const plane = new THREE.Plane(new THREE.Vector3(0, 1, 0), 0)
+    const hit   = new THREE.Vector3()
+    ray.ray.intersectPlane(plane, hit)
+
+    if (!hit) return null
+    const dist = this.pos.distanceTo(hit)
+    if (dist > MAX_REACH || dist < 0.5) return null
+
+    return [Math.round(hit.x / CELL), Math.round(hit.z / CELL)]
+  }
+
+  private updateGhost() {
+    const cell = this.getPlacementCell()
+    if (!cell) {
+      if (this.ghostMesh) this.ghostMesh.visible = false
+      this.hitGx = null; this.hitGz = null
+      return
+    }
+    const [gx, gz] = cell
+    this.hitGx = gx; this.hitGz = gz
+
+    if (this.ghostType !== this.placement.type) {
+      if (this.ghostMesh) this.scene.remove(this.ghostMesh)
+      this.ghostMesh = buildMesh(this.placement.type)
+      this.ghostMesh.traverse(c => {
+        if ((c as THREE.Mesh).isMesh) {
+          const m  = c as THREE.Mesh
+          const mt = (Array.isArray(m.material) ? m.material[0] : m.material) as THREE.MeshLambertMaterial
+          const cl = mt.clone()
+          cl.transparent = true; cl.opacity = 0.5
+          m.material = cl
+        }
+      })
+      this.scene.add(this.ghostMesh)
+      this.ghostType = this.placement.type
+    }
+    if (this.ghostMesh) {
+      const def = getItemDef(this.placement.type)
+      const yOff = def.layer === 1 && this.placement.type === 'roof' ? 1.4 : 0
+      this.ghostMesh.position.set(gx * CELL, yOff, gz * CELL)
+      this.ghostMesh.rotation.y = this.placement.rotation * (Math.PI / 2)
+      this.ghostMesh.visible = true
     }
   }
 
-  setPlacement(type: ItemType, rotation = 0) {
-    this.placement = { type, rotation }
+  private doPlace() {
+    if (this.hitGx === null || this.hitGz === null) return
+    const type = this.placement.type
+    this.grid.place(this.hitGx, this.hitGz, { type, rotation: this.placement.rotation })
+    if (VEHICLE_TYPES.has(type)) {
+      const mesh = this.grid.getMeshAt(this.hitGx, this.hitGz, 1)
+      if (mesh) this.carSystem.spawnCar(mesh, this.hitGx, this.hitGz)
+    }
   }
 
+  private doRemove() {
+    if (this.hitGx === null || this.hitGz === null) return
+    this.grid.remove(this.hitGx, this.hitGz)
+  }
+
+  // ── Public API ──────────────────────────────────────────────────────────────
+
+  setPlacement(type: ItemType) {
+    this.placement = { type, rotation: this.placement.rotation }
+  }
+
+  isNight(): boolean { return this.dayNight.isNight() }
+
   start() {
-    this.rafId = requestAnimationFrame(t => {
-      this.lastTime = t
-      this.tick(t)
-    })
+    this.rafId = requestAnimationFrame(t => { this.lastTime = t; this.tick(t) })
   }
 
   stop() {
     cancelAnimationFrame(this.rafId)
     if (this.ghostMesh) this.scene.remove(this.ghostMesh)
     this.renderer.dispose()
+    if (document.pointerLockElement === this.canvas) document.exitPointerLock()
   }
 }

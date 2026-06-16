@@ -3,145 +3,147 @@ import { ITEMS, CATEGORIES } from '../game/items'
 import type { ItemType } from '../game/items'
 
 interface Props {
+  selected: ItemType
   onSelect: (type: ItemType) => void
   onClose: () => void
-  selected: ItemType
 }
 
-export default function Inventory({ onSelect, onClose, selected }: Props) {
+export default function Inventory({ selected, onSelect, onClose }: Props) {
   const [cat, setCat] = useState<string>('ground')
-
-  const filtered = ITEMS.filter(it => it.category === cat)
+  const filtered = ITEMS.filter(i => i.category === cat)
 
   return (
     <div
       onClick={e => { if (e.target === e.currentTarget) onClose() }}
       style={{
         position: 'fixed', inset: 0,
-        background: 'rgba(0,0,0,0.65)',
-        backdropFilter: 'blur(6px)',
+        background: 'rgba(0,0,0,0.72)',
         display: 'flex', alignItems: 'center', justifyContent: 'center',
         zIndex: 200,
-        fontFamily: '"Segoe UI", system-ui, sans-serif',
       }}
     >
       <div style={{
-        background: 'rgba(15,23,42,0.95)',
-        border: '1px solid rgba(255,255,255,0.15)',
-        borderRadius: 20,
-        width: '90%',
-        maxWidth: 580,
+        background: '#1c1c1c',
+        border: '2px solid #333',
+        borderRadius: 8,
+        width: 520,
         maxHeight: '80vh',
         display: 'flex',
         flexDirection: 'column',
-        overflow: 'hidden',
-        boxShadow: '0 30px 80px rgba(0,0,0,0.8)',
+        fontFamily: 'monospace',
+        boxShadow: '0 0 0 1px #000, 0 20px 60px rgba(0,0,0,0.9)',
       }}>
-        {/* Header */}
+
+        {/* Title bar */}
         <div style={{
+          padding: '10px 14px',
+          borderBottom: '2px solid #2a2a2a',
           display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-          padding: '20px 24px 14px',
-          borderBottom: '1px solid rgba(255,255,255,0.1)',
         }}>
-          <h2 style={{ color: '#fff', margin: 0, fontSize: 18, fontWeight: 700 }}>
-            🎒 Inventaire
-          </h2>
-          <button
-            onClick={onClose}
-            style={{
-              background: 'rgba(255,255,255,0.1)', border: 'none',
-              borderRadius: 8, padding: '6px 12px',
-              color: '#fff', cursor: 'pointer', fontSize: 14,
-            }}
-          >✕</button>
+          <span style={{ color: '#ccc', fontSize: 13, letterSpacing: 1 }}>INVENTAIRE</span>
+          <span style={{ color: '#555', fontSize: 11 }}>[ E ] fermer</span>
         </div>
 
-        {/* Category tabs */}
-        <div style={{
-          display: 'flex', gap: 6, padding: '12px 16px 10px',
-          overflowX: 'auto', flexShrink: 0,
-        }}>
-          {CATEGORIES.map(c => (
-            <button
-              key={c.id}
-              onClick={() => setCat(c.id)}
-              style={{
-                padding: '7px 14px',
-                borderRadius: 10,
-                border: 'none',
-                background: cat === c.id
-                  ? 'rgba(96,165,250,0.3)'
-                  : 'rgba(255,255,255,0.07)',
-                color: cat === c.id ? '#93c5fd' : 'rgba(255,255,255,0.6)',
-                cursor: 'pointer',
-                fontSize: 13,
-                fontWeight: cat === c.id ? 700 : 400,
-                whiteSpace: 'nowrap',
-                outline: cat === c.id ? '1px solid #60a5fa' : 'none',
-              }}
-            >
-              {c.emoji} {c.label}
-            </button>
-          ))}
-        </div>
+        {/* Body: tabs left + grid right */}
+        <div style={{ display: 'flex', flex: 1, overflow: 'hidden' }}>
 
-        {/* Items grid */}
-        <div style={{
-          display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fill, minmax(88px, 1fr))',
-          gap: 10,
-          padding: '10px 16px 20px',
-          overflowY: 'auto',
-        }}>
-          {filtered.map(item => {
-            const isActive = selected === item.type
-            return (
-              <div
-                key={item.type}
-                onClick={() => { onSelect(item.type); onClose() }}
+          {/* Category tabs (left vertical bar) */}
+          <div style={{
+            display: 'flex', flexDirection: 'column',
+            borderRight: '2px solid #2a2a2a',
+            padding: '8px 0',
+            gap: 2,
+            width: 80,
+            flexShrink: 0,
+          }}>
+            {CATEGORIES.map(c => (
+              <button
+                key={c.id}
+                onClick={() => setCat(c.id)}
                 style={{
-                  padding: '14px 8px 10px',
-                  borderRadius: 12,
-                  border: isActive
-                    ? '2px solid #60a5fa'
-                    : '2px solid rgba(255,255,255,0.1)',
-                  background: isActive
-                    ? 'rgba(96,165,250,0.15)'
-                    : 'rgba(255,255,255,0.05)',
+                  background: cat === c.id ? '#2a2a2a' : 'transparent',
+                  border: 'none',
+                  borderLeft: cat === c.id ? '3px solid #60a5fa' : '3px solid transparent',
+                  padding: '10px 6px',
                   cursor: 'pointer',
-                  textAlign: 'center',
-                  transition: 'all 0.12s',
-                  userSelect: 'none',
-                }}
-                onMouseOver={e => {
-                  if (!isActive) (e.currentTarget as HTMLElement).style.background = 'rgba(255,255,255,0.1)'
-                }}
-                onMouseOut={e => {
-                  if (!isActive) (e.currentTarget as HTMLElement).style.background = 'rgba(255,255,255,0.05)'
+                  display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 3,
+                  transition: 'background 0.1s',
                 }}
               >
-                <div style={{ fontSize: 30, marginBottom: 6 }}>{item.emoji}</div>
-                <div style={{
-                  color: isActive ? '#93c5fd' : 'rgba(255,255,255,0.8)',
-                  fontSize: 11,
-                  fontWeight: isActive ? 700 : 400,
-                  lineHeight: 1.3,
+                <span style={{ fontSize: 20 }}>{c.emoji}</span>
+                <span style={{
+                  fontSize: 9, color: cat === c.id ? '#93c5fd' : '#555',
+                  letterSpacing: 0.5, textTransform: 'uppercase',
                 }}>
-                  {item.label}
+                  {c.label}
+                </span>
+              </button>
+            ))}
+          </div>
+
+          {/* Item grid */}
+          <div style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(5, 1fr)',
+            gap: 4,
+            padding: 10,
+            overflowY: 'auto',
+            flex: 1,
+            alignContent: 'start',
+          }}>
+            {filtered.map(item => {
+              const active = selected === item.type
+              return (
+                <div
+                  key={item.type}
+                  onClick={() => { onSelect(item.type); onClose() }}
+                  title={item.label}
+                  style={{
+                    background: active ? '#1a2a3a' : '#252525',
+                    border: active ? '2px solid #60a5fa' : '2px solid #333',
+                    borderRadius: 4,
+                    padding: '10px 4px 7px',
+                    cursor: 'pointer',
+                    textAlign: 'center',
+                    transition: 'border-color 0.1s, background 0.1s',
+                  }}
+                  onMouseOver={e => {
+                    if (!active) {
+                      (e.currentTarget as HTMLElement).style.background = '#2e2e2e'
+                      ;(e.currentTarget as HTMLElement).style.borderColor = '#444'
+                    }
+                  }}
+                  onMouseOut={e => {
+                    if (!active) {
+                      (e.currentTarget as HTMLElement).style.background = '#252525'
+                      ;(e.currentTarget as HTMLElement).style.borderColor = '#333'
+                    }
+                  }}
+                >
+                  <div style={{ fontSize: 26, lineHeight: 1 }}>{item.emoji}</div>
+                  <div style={{
+                    fontSize: 9, color: active ? '#93c5fd' : '#666',
+                    marginTop: 5, letterSpacing: 0.3,
+                    overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+                  }}>
+                    {item.label}
+                  </div>
                 </div>
-              </div>
-            )
-          })}
+              )
+            })}
+          </div>
         </div>
 
+        {/* Footer */}
         <div style={{
-          padding: '10px 20px 14px',
-          borderTop: '1px solid rgba(255,255,255,0.08)',
-          color: 'rgba(255,255,255,0.3)',
-          fontSize: 12,
-          textAlign: 'center',
+          padding: '7px 14px',
+          borderTop: '2px solid #2a2a2a',
+          color: '#3a3a3a', fontSize: 10, letterSpacing: 0.5,
+          display: 'flex', gap: 16,
         }}>
-          Clic gauche pour placer · Clic droit pour supprimer · R pour tourner · E pour fermer
+          <span>CLIC GAUCHE → placer</span>
+          <span>CLIC DROIT → supprimer</span>
+          <span>R → tourner</span>
         </div>
       </div>
     </div>
